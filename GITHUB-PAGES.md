@@ -10,7 +10,7 @@ GitHub Actions build React, chạy kiểm tra, xuất 17 đường dẫn công k
 
 GitHub Pages không chạy server.mjs hoặc SQLite. Biến Actions `BOXANH_API_BASE` chỉ định URL HTTPS của máy chủ API. `public/api-client.js` chuyển các lời gọi API công khai tới máy chủ đó; không gửi cookie và không chuyển API quản trị. Ảnh đồ cũ công khai cũng dùng URL API tương ứng.
 
-Máy chủ API cần đặt `PUBLIC_CLIENT_ORIGIN=https://anhtuan1372006-boop.github.io`. Chỉ origin này được thêm CORS; POST từ origin khác vẫn bị chặn. Public preview chặn quản trị. Cổng quản trị hiện dùng máy chủ riêng trên máy tính, giữ cơ chế đăng nhập hiện có.
+Máy chủ API cần đặt `PUBLIC_CLIENT_ORIGIN=https://anhtuan1372006-boop.github.io`. Chỉ origin này được thêm CORS; POST từ origin khác vẫn bị chặn. Public preview chặn quản trị. Cổng quản trị hiện dùng máy chủ riêng trên máy tính, giữ cơ chế đăng nhập hiện có. Khi mở bản GitHub Pages, giao diện tải cấu hình mới nhất từ API để nhận bảng giá/liên hệ đã cập nhật; giới hạn chờ 3 giây và dùng bản tham khảo đã đóng gói nếu không kết nối được.
 
 Đường hầm thử nghiệm phụ thuộc máy tính đang chạy, có thể đổi URL khi khởi động lại. Khi API không khả dụng, website báo lỗi bằng tiếng Việt và giữ biểu mẫu để thử lại. Đây chưa phải cấu hình backend phục vụ liên tục 24/7.
 

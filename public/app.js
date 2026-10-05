@@ -98,7 +98,17 @@ function adminGoods(id){const g=adminData.goods.find(g=>g.id===id);if(!g)return;
 function syncContact(){document.querySelectorAll('[data-contact-area]').forEach(el=>el.textContent=config.area);document.querySelectorAll('[data-contact-link=call]').forEach(a=>a.href='tel:'+config.phone);const text=config.phone.replace(/(\d{4})(\d{3})(\d{3})/,'$1 $2 $3');const header=$('.header-phone');if(header){header.href='tel:'+config.phone;if(!header.querySelector('[data-contact-phone]'))header.textContent=text;}document.querySelectorAll('[data-contact-phone]').forEach(el=>el.textContent=text);const floating=$('.floating-contact');if(floating){floating.href='tel:'+config.phone;floating.setAttribute('aria-label','Gọi BOXANH '+text);}}
 function updateContact(){syncContact();if(config.publicPreview)document.querySelector('.footer-grid a[href="/quan-tri"]')?.remove();$('#footer-contact').innerHTML=`${esc(config.area)}<br><a href="tel:${esc(config.phone)}">${esc(config.phone.replace(/(\d{4})(\d{3})(\d{3})/,'$1 $2 $3'))}</a>${config.email?`<a href="mailto:${esc(config.email)}">${esc(config.email)}</a>`:''}`;}
 function registerQuoteTool(){const context=document.modelContext;if(!context?.registerTool)return;const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});try{Promise.resolve(context.registerTool({name:'configure_move_quote',title:'Ước tính chuyển trọ BOXANH',description:'Chuẩn bị gói, số hộp và thông tin vận chuyển trong biểu mẫu, hiển thị giá dự kiến. Không gửi yêu cầu hoặc xác nhận lịch.',inputSchema:{type:'object',properties:{service:{type:'string',enum:['small','full','boxes']},boxes:{type:'integer',minimum:1,maximum:60},distance:{type:'integer',minimum:1,maximum:80},originFloor:{type:'integer',minimum:0,maximum:15},destinationFloor:{type:'integer',minimum:0,maximum:15},originElevator:{type:'boolean'},destinationElevator:{type:'boolean'},bulky:{type:'integer',minimum:0,maximum:30},packing:{type:'boolean'}},required:['service','boxes','distance'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},async execute(input){if(!input||typeof input!=='object')throw new Error('Thông tin báo giá chưa hợp lệ.');const keys=['service','boxes','distance','originFloor','destinationFloor','originElevator','destinationElevator','bulky','packing'];if(Object.keys(input).some(k=>!keys.includes(k)))throw new Error('Chỉ nhập thông tin tính báo giá.');const staged=Object.fromEntries(keys.filter(k=>input[k]!==undefined).map(k=>[k,input[k]])),q=await api('/api/quote',staged);bookingDraft={...bookingDraft,...staged};bookingStep=1;go('/dat-lich');await updateQuote();return {estimate:q.total,currency:'VND',service:q.service,boxes:q.boxes,lines:q.lines,submitted:false};}},{signal:lifecycle.signal})).catch(()=>{});}catch{}}
-try{if(!embeddedConfig)config=await api('/api/config');}catch{toast('Chưa tải được cấu hình dịch vụ. Vui lòng làm mới trang.');}
+try{
+  if(config.apiBase){
+    const controller=new AbortController();
+    const configTimeout=setTimeout(()=>controller.abort(),3000);
+    try{
+      const response=await fetch('/api/config',{signal:controller.signal,credentials:'same-origin'});
+      if(!response.ok)throw new Error('Không tải được cấu hình dịch vụ.');
+      config={...config,...await response.json()};
+    }finally{clearTimeout(configTimeout);}
+  }else if(!embeddedConfig)config=await api('/api/config');
+}catch{toast('Chưa tải được cập nhật dịch vụ. Giá đang hiển thị là tham khảo; vui lòng thử lại hoặc gọi BOXANH.');}
 updateContact();
 await render();
 registerQuoteTool();
