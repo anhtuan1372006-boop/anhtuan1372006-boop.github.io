@@ -1,0 +1,273 @@
+{
+  "stockLicense": {
+    "url": "https://unsplash.com/license",
+    "summary": "Free commercial and non-commercial use. Attribution appreciated but not required. Do not resell images unchanged or compile them to replicate a competing image service."
+  },
+  "stock": [
+    {
+      "subject": "desk",
+      "credit": "Chris Vasquez",
+      "source": "https://unsplash.com/photos/a-desk-with-a-plant-and-a-book-on-it-ib4VRerGeDA",
+      "url": "https://images.unsplash.com/photo-1654356709115-3f68998bead4?auto=format&fit=crop&w=1200&q=85",
+      "note": "Sunlit modest white desk, plants and books. Crop slightly toward bottom to avoid LOVE decoration near top."
+    },
+    {
+      "subject": "books",
+      "credit": "Laura Ohlman",
+      "source": "https://unsplash.com/photos/a-stack-of-books-qRtcb9wHG40",
+      "url": "https://images.unsplash.com/photo-1660593089599-f8e50f5204b6?auto=format&fit=crop&w=1200&q=85",
+      "note": "Clean horizontal stack of book pages against neutral white background; no title text."
+    },
+    {
+      "subject": "fan",
+      "credit": "insung yoon",
+      "source": "https://unsplash.com/photos/turned-on-white-and-blue-fan-on-table-FYS6bgGQHPU",
+      "url": "https://images.unsplash.com/photo-1566441699339-0c7bac167c58?auto=format&fit=crop&w=1200&q=85",
+      "note": "Small white and teal USB desk fan, centered. Portrait source; crop to lower center to focus fan, away from computer screen."
+    },
+    {
+      "subject": "room",
+      "credit": "Huy Phan",
+      "source": "https://unsplash.com/photos/a-living-room-filled-with-furniture-and-a-blue-couch-bDIpPnj8j34",
+      "url": "https://images.unsplash.com/photo-1737737196308-e5b848160b78?auto=format&fit=crop&w=1200&q=85",
+      "note": "Compact apartment interior in Ho Chi Minh City, cream and wood with blue sofa and green plants. Lifestyle visual, not property or inventory proof."
+    }
+  ],
+  "verification": "Each stock photo source page explicitly says Free to use under Unsplash License. Each image visually inspected in browser at 1000px. 1200px image URLs checked via HTTP HEAD.",
+  "previousHero": {
+    "path": "public/assets/hero.png",
+    "generationMode": "built-in image_gen",
+    "purpose": "Illustrative BOXANH brand visual; not actual business proof",
+    "prompt": "Use case: photorealistic-natural\nAsset type: original website hero photo for BOXANH, illustrative brand visual\nPrimary request: create one polished photorealistic editorial lifestyle photograph in landscape 3:2, showing two Vietnamese university-age adults moving into a bright, modest modern rented studio. They are naturally smiling during the activity, unposed, carrying practical stackable dark emerald green reusable plastic moving crates with lids. One small stack of books and a pothos plant are visible; include a small warm orange accent object.\nScene/backdrop: uncluttered sunlit cream wall, blue-grey doorway, a simple tidy studio interior. Genuine everyday Vietnamese student lifestyle, warm and approachable.\nComposition/framing: waist-up to three-quarter-body candid medium-wide composition; main people and crates centered so the photo can be cropped on the right side of a landing page. Keep both faces comfortably inside the central 60 percent, keep breathing room around them. No embedded graphics or UI.\nLighting/mood: warm natural daylight, premium commercial photographic quality with realistic skin texture, gentle editorial color grading, calm optimistic mood.\nMaterials/textures: visibly reusable rigid plastic emerald crates with realistic lids and handles, real cotton clothing, natural plants and book edges.\nConstraints: faces and bodies anatomically natural; exactly two adult people; no logos, no readable text, no watermark; no cardboard-dominated scene; no exaggerated posing; no duplicated hands, no extra limbs. Image only.",
+    "inUse": false,
+    "shipped": false,
+    "note": "Retired asset from the first draft; removed from the shipped public directory in v3. It is not used in the current interface."
+  },
+  "redesign": {
+    "purpose": "Real, licensed photography for BOXANH redesign. Context visuals; no claim of actual BOXANH customers, properties, or student residency.",
+    "recommended": [
+      "hcmc-room-ngan-duong.jpg",
+      "hcmc-apartment-huy-phan.jpg"
+    ],
+    "photos": [
+      {
+        "file": "hcmc-room-ngan-duong.jpg",
+        "path": "C:/Users/tuan/Documents/Codex/2026-10-03/sau-c-th-c-b-n/work/redesign-assets/hcmc-room-ngan-duong.jpg",
+        "source": "https://www.pexels.com/photo/a-minimalist-open-wardrobe-in-a-room-18306955/",
+        "download": "https://images.pexels.com/photos/18306955/pexels-photo-18306955.jpeg?cs=srgb&dl=pexels-nganduong-18306955.jpg&fm=jpg",
+        "author": "Ngân Dương",
+        "credit": "Photo by Ngân Dương on Pexels",
+        "license": "Pexels License",
+        "licenseURL": "https://www.pexels.com/license/",
+        "dimensions": [
+          4160,
+          6240
+        ],
+        "location": "Ho Chi Minh City, Vietnam (explicit on source page)",
+        "camera": "Fujifilm X-T3",
+        "takenAt": "2023-09-03",
+        "notes": "Minimal white bedroom/wardrobe/mirror with wood floor. Real source includes camera and capture date. Useful crop for living context. Source does not prove student residency."
+      },
+      {
+        "file": "hcmc-apartment-huy-phan.jpg",
+        "path": "C:/Users/tuan/Documents/Codex/2026-10-03/sau-c-th-c-b-n/work/redesign-assets/hcmc-apartment-huy-phan.jpg",
+        "source": "https://unsplash.com/photos/a-living-room-with-a-blue-couch-and-a-coffee-table-KFcqUsn0_Z0",
+        "download": "https://images.unsplash.com/photo-1737737210863-387afd35344e?auto=format&fit=crop&w=2400&q=90&fm=jpg",
+        "author": "Huy Phan",
+        "credit": "Photo by Huy Phan on Unsplash",
+        "license": "Unsplash License",
+        "licenseURL": "https://unsplash.com/license/",
+        "dimensions": [
+          2400,
+          1600
+        ],
+        "location": "Same interior visually as Huy Phan's bDIpPnj8j34 image whose source explicitly lists HCMC; location of this angle is inferred from matching interior.",
+        "locationEvidence": "https://unsplash.com/photos/a-living-room-filled-with-furniture-and-a-blue-couch-bDIpPnj8j34",
+        "camera": "Fujifilm X100F",
+        "publishedAt": "2025-01-24",
+        "notes": "Warm cream/wood compact living room, dark blue sofa and green plants. Different photo/angle from existing project room.jpg."
+      },
+      {
+        "file": "moving-ketut-subiyanto.jpg",
+        "path": "C:/Users/tuan/Documents/Codex/2026-10-03/sau-c-th-c-b-n/work/redesign-assets/moving-ketut-subiyanto.jpg",
+        "source": "https://www.pexels.com/photo/young-woman-with-boxes-while-moving-out-of-old-home-4246270/",
+        "download": "https://images.pexels.com/photos/4246270/pexels-photo-4246270.jpeg?cs=srgb&dl=pexels-ketut-subiyanto-4246270.jpg&fm=jpg",
+        "author": "Ketut Subiyanto",
+        "credit": "Photo by Ketut Subiyanto on Pexels",
+        "license": "Pexels License",
+        "licenseURL": "https://www.pexels.com/license/",
+        "dimensions": [
+          6000,
+          4000
+        ],
+        "camera": "Sony ILCE-7M3",
+        "takenAt": "2020-04-19",
+        "notes": "Generic young woman carrying cardboard moving boxes. Not Vietnamese context; fallback only, less suitable for reusable plastic crate concept."
+      }
+    ],
+    "licenses": {
+      "pexels": "Free use and modification on commercial websites/ads. Attribution optional. Do not imply endorsement by identifiable people or brands; do not sell unaltered copies or redistribute as a stock library.",
+      "unsplash": "Free commercial/noncommercial use, modification and distribution. Attribution optional. Do not sell images without significant modification or compile a competing photo service."
+    },
+    "existingProjectRoom": {
+      "file": "outputs/boxanh/public/assets/room.jpg",
+      "source": "https://unsplash.com/photos/a-living-room-filled-with-furniture-and-a-blue-couch-bDIpPnj8j34",
+      "author": "Huy Phan",
+      "license": "Unsplash License",
+      "licenseURL": "https://unsplash.com/license/",
+      "imageURL": "https://images.unsplash.com/photo-1737737196308-e5b848160b78?auto=format&fit=crop&w=1200&q=85",
+      "sameExactImageAsNew": false
+    },
+    "crateModel": {
+      "file": "plastic-crate-02.glb",
+      "author": "Fabi_G",
+      "source": "https://polyhaven.com/a/plastic_crate_02",
+      "download": "https://www.mixos.io/models/plastic_crate_02.glb",
+      "license": "CC0 1.0 Universal",
+      "licenseURL": "https://polyhaven.com/license",
+      "provenanceFile": "plastic-crate-02-provenance.json",
+      "bytes": 331100,
+      "triangles": 5840,
+      "requiredThreeJSLoader": "DRACOLoader via GLTFLoader",
+      "extensions": [
+        "KHR_draco_mesh_compression",
+        "EXT_texture_webp"
+      ],
+      "notes": "Existing model downloaded unchanged, not generated by code. Orange PBR material may be recolored. Vented utility crate without lid; no claim of exact BOXANH product."
+    }
+  },
+  "model": {
+    "name": "Plastic Crate 02",
+    "originalAuthor": "Fabi_G",
+    "originalSource": "https://polyhaven.com/a/plastic_crate_02",
+    "license": "CC0 1.0 Universal",
+    "licenseEvidence": "https://polyhaven.com/license",
+    "convertedGLBSourcePage": "https://www.mixos.io/free-models/props/plastic_crate_02",
+    "exactDownloadURL": "https://www.mixos.io/models/plastic_crate_02.glb",
+    "localFile": "plastic-crate-02.glb",
+    "bytes": 331100,
+    "sha256": "4CAD5E5B9D60B29CE33B4EFD07AF304AF828570A314E68D5C9E01FDE4EB9E8F5",
+    "triangles": 5840,
+    "vertices": 4745,
+    "materials": 1,
+    "meshes": 1,
+    "embeddedImages": 3,
+    "imageFormat": "WebP",
+    "extensionsRequired": [
+      "EXT_texture_webp",
+      "KHR_draco_mesh_compression"
+    ],
+    "boundingBoxMeters": {
+      "depth": 0.4055013955,
+      "height": 0.2540891618,
+      "width": 0.5055013895
+    },
+    "material": {
+      "name": "plastic_crate_02",
+      "alphaMode": "BLEND",
+      "baseColorFactor": [
+        1,
+        0.40816283226013184,
+        0,
+        1
+      ],
+      "textures": [
+        "baseColor + opacity",
+        "normal",
+        "roughness"
+      ],
+      "metallicFactor": 0
+    },
+    "downloadedUTC": "2026-10-03T15:06:04.6128932Z",
+    "notes": "Existing third-party conversion of the CC0 Poly Haven model. Geometry and textures were downloaded unchanged. Source page metadata listed 1837680 bytes, but the verified live downloaded asset is Draco/WebP compressed and 331100 bytes. Needs DRACOLoader for Three.js GLTFLoader."
+  },
+  "redesignNote": "Licensed stock photographs are illustrative. The hero uses a labeled AI-generated product concept. CC0 crate geometry is a separate illustrative 3D model; neither visual represents confirmed BOXANH inventory.",
+  "cratePoster": {
+    "path": "public/assets/crate-poster.jpg",
+    "source": "Rendered from the licensed CC0 crate.glb in BOXANH Three.js viewer",
+    "license": "CC0 derivative",
+    "purpose": "Static preview; the WebGL viewer loads only after a visitor requests it."
+  },
+  "fonts": {
+    "path": "public/assets/fonts/",
+    "family": "Be Vietnam Pro",
+    "source": "https://www.npmjs.com/package/@fontsource/be-vietnam-pro",
+    "version": "5.3.0",
+    "license": "SIL Open Font License 1.1",
+    "licenseFile": "public/assets/fonts/OFL.txt"
+  },
+  "release": "5.0.0",
+  "generatedConcept": {
+    "path": "public/assets/boxanh-concept.webp",
+    "generator": "OpenAI built-in image generation",
+    "created": "2026-10-04",
+    "purpose": "Labeled product concept for the hero, not a photograph of actual BOXANH inventory.",
+    "brief": "Two durable dark green reusable plastic crates with lids; one open with linen, books, a lamp and a plant; warm natural studio light, ivory background, no text or logos."
+  },
+  "portalV6": {
+    "version": "6.0.0",
+    "reference": "https://donnha24h.vn/dich-vu-chuyen-nha-tro-chuyen-nghiep-gia-re-tai-tp-hcm/",
+    "referenceUse": "Service/contact/navigation hierarchy only; no copied media, logo, text, or business guarantees.",
+    "libraries": [
+      "React",
+      "Tailwind CSS",
+      "shadcn/ui",
+      "Radix UI",
+      "Lucide",
+      "Three.js"
+    ],
+    "hero": "public/assets/boxanh-concept.webp",
+    "notes": "AI concept/stock/3D labels retained. Photo license/source records above remain applicable."
+  },
+  "bannerV61": {
+    "version": "6.1.0",
+    "structure": "Centered website frame, large brand/contact/service masthead, two-row navigation",
+    "assets": [
+      "public/assets/banner-moving.svg",
+      "public/assets/banner-cleaning.svg",
+      "public/assets/banner-handover.svg"
+    ],
+    "provenance": "Original SVG illustrations and decorative skyline made in code for BOXANH; existing BOXANH mark retained. No competitor logos/media copied."
+  },
+  "v7": {
+    "ambassador": {
+      "file": "public/assets/boxanh-ambassador.png",
+      "origin": "OpenAI image generation",
+      "note": "Brand illustration, not a real employee photograph. Transparent original generated on 2026-10-04."
+    },
+    "greeting": {
+      "file": "public/assets/boxanh-loi-chao.mp3",
+      "text": "Hãy đến và sử dụng dịch vụ của chúng tôi.",
+      "voice": "Windows Microsoft An / vi-VN"
+    },
+    "tutorial": {
+      "file": "public/assets/boxanh-huong-dan.mp4",
+      "durationSeconds": 89.6,
+      "source": "Actual BOXANH UI screenshots captured locally; no customer requests submitted.",
+      "captions": "public/assets/boxanh-huong-dan.vtt",
+      "voice": "Windows Microsoft An / vi-VN"
+    }
+  },
+  "tutorial-v10": {
+    "file": "public/assets/boxanh-huong-dan-v10.mp4",
+    "poster": "public/assets/boxanh-video-v10-poster.png",
+    "captions": "public/assets/boxanh-huong-dan-v10.vtt",
+    "storyboard": "public/assets/boxanh-tutorial-v10.json",
+    "durationSeconds": 132.3,
+    "chapters": 13,
+    "source": "Actual BOXANH v10 interface screenshots; no real customer requests submitted.",
+    "voice": "Installed Windows Microsoft An / vi-VN",
+    "fonts": "Be Vietnam Pro and BOXANH Serif (Noto Serif), matching the website; OFL licenses in licenses/.",
+    "note": "Narrated screenshots with captions and transitions; replaces v7 tutorial in current interface."
+  },
+  "typography-v9": {
+    "family": "BOXANH Serif (Noto Serif)",
+    "source": "https://github.com/google/fonts/tree/main/ofl/notoserif",
+    "license": "OFL-1.1; licenses/NotoSerif-OFL.txt",
+    "faces": [
+      "public/assets/fonts/boxanh-serif-400-normal.woff2",
+      "public/assets/fonts/boxanh-serif-400-italic.woff2"
+    ],
+    "note": "Static weight 400, real italic; Latin and Vietnamese kept in one file per style to preserve spacing. Font asset hashes and upstream blob IDs are in public/assets/fonts/boxanh-serif-manifest.json."
+  }
+}

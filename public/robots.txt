@@ -1,0 +1,21 @@
+# BOXANH: public service pages may be read for user-requested reviews.
+# Private records remain protected by application authentication.
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /api/
+Disallow: /quan-tri
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+Disallow: /quan-tri
+
+# Permission to review public pages does not grant permission to train models.
+User-agent: GPTBot
+Disallow: /
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /quan-tri

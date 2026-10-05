@@ -1,0 +1,8 @@
+{
+  "version":"2.0.0",
+  "tasks":[
+    {"label":"BOXANH: chạy website","type":"npm","script":"start","isBackground":true,"problemMatcher":[]},
+    {"label":"BOXANH: kiểm tra mã","type":"npm","script":"check","problemMatcher":[],"group":"build"},
+    {"label":"BOXANH: kiểm thử nghiệp vụ","type":"npm","script":"test","problemMatcher":[],"group":"test"}
+  ]
+}

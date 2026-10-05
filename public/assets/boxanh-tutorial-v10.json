@@ -1,0 +1,104 @@
+{
+  "version": 10,
+  "fontFamilies": [
+    "Be Vietnam Pro",
+    "BOXANH Serif"
+  ],
+  "chapters": [
+    {
+      "file": "00-home",
+      "title": "Khám phá BOXANH",
+      "caption": "Bấm vào từng thẻ để mở trang chức năng riêng.",
+      "speech": "Chào bạn đến với BOXANH. Trang chủ giới thiệu các dịch vụ chính. Bấm vào từng thẻ để mở giao diện riêng. Dùng thanh điều hướng hoặc nút Quay lại để tiếp tục hành trình.",
+      "duration": 10.033
+    },
+    {
+      "file": "01-moving",
+      "title": "Chuyển trọ",
+      "caption": "Xem hành trình, phạm vi dịch vụ và gửi kế hoạch chuyển.",
+      "speech": "Trang Chuyển trọ có sơ đồ hành trình từ phòng hiện tại đến phòng mới. Xem quy trình giao hộp, vận chuyển và thu hồi. Bấm Lên kế hoạch chuyển trọ để gửi nhu cầu.",
+      "duration": 9.261
+    },
+    {
+      "file": "02-cleaning",
+      "title": "Dọn phòng",
+      "caption": "Chọn phòng ở, bếp và vệ sinh, hoặc phòng mới.",
+      "speech": "Trang Dọn phòng có giao diện riêng cho không gian sống. Bấm chọn khu vực bạn cần dọn để xem phạm vi. BOXANH khảo sát hiện trạng trước khi thống nhất hạng mục và chi phí.",
+      "duration": 9.482
+    },
+    {
+      "file": "03-handover",
+      "title": "Bàn giao phòng",
+      "caption": "Đánh dấu phần đã chuẩn bị. Danh sách này chưa phải biên bản.",
+      "speech": "Trang Bàn giao giúp bạn chuẩn bị ảnh hiện trạng, nội thất, điện nước và chìa khóa. Bạn có thể đánh dấu việc đã chuẩn bị. Đây là danh sách cá nhân, chưa phải biên bản bàn giao đã ký.",
+      "duration": 10.421
+    },
+    {
+      "file": "04-quote",
+      "title": "Ước tính chi phí",
+      "caption": "Chọn gói, số hộp và quãng đường. Giá chốt sau khảo sát.",
+      "speech": "Mở Ước tính và nhận báo giá. Chọn dịch vụ, số hộp và quãng đường. Giá hiện tại là mức tham khảo. Dọn phòng và bàn giao cần khảo sát trước khi có báo giá.",
+      "duration": 9.962
+    },
+    {
+      "file": "05-booking",
+      "title": "Gói & đồ đạc",
+      "caption": "Bước 1: gói phù hợp, số hộp và nhu cầu đóng gói.",
+      "speech": "Để gửi yêu cầu chuyển trọ, chọn gói phù hợp với bạn. Điền số hộp dự kiến, số món cồng kềnh và nhu cầu hỗ trợ đóng gói. Sau đó bấm Tiếp tục.",
+      "duration": 9.295
+    },
+    {
+      "file": "06-schedule",
+      "title": "Lịch & địa chỉ",
+      "caption": "Bước 2: nơi đi, nơi đến, ngày chuyển và điều kiện bốc xếp.",
+      "speech": "Điền địa chỉ lấy đồ, phòng mới, ngày chuyển và khung giờ mong muốn. Ghi đúng quãng đường, tầng và thang máy để BOXANH khảo sát sát với thực tế.",
+      "duration": 8.555
+    },
+    {
+      "file": "07-surplus",
+      "title": "Đồ không mang đi",
+      "caption": "Bước 3: thu mua, ký gửi hoặc phân loại. Có thể gửi ảnh.",
+      "speech": "Nếu có đồ không mang theo, chọn thu mua, ký gửi hoặc phân loại. Mô tả tình trạng và thêm ảnh nếu cần. Tiền thu mua chỉ được ghi nhận sau khi kiểm tra, thống nhất giá và tiếp nhận đồ.",
+      "duration": 10.885
+    },
+    {
+      "file": "08-contact",
+      "title": "Kiểm tra & gửi",
+      "caption": "Bước 4: kiểm tra thông tin, đọc chính sách và lưu mã yêu cầu.",
+      "speech": "Điền tên và số điện thoại. Kiểm tra thông tin và chính sách trước khi gửi. Khi thành công, lưu mã yêu cầu để tra cứu. Gửi yêu cầu chưa xác nhận lịch và chưa yêu cầu thanh toán.",
+      "duration": 10.7
+    },
+    {
+      "file": "09-goods",
+      "title": "Thu mua & ký gửi",
+      "caption": "Gửi đồ riêng hoặc liên kết với chuyến chuyển trọ.",
+      "speech": "Bạn có thể gửi đồ riêng mà không cần đặt chuyến chuyển. Chọn nhóm đồ, tình trạng, phương án và ảnh. Đồ ký gửi được thanh toán sau khi bán và đối soát, không trừ phí trước từ giá ước tính.",
+      "duration": 10.758
+    },
+    {
+      "file": "10-tracking",
+      "title": "Tra cứu tiến độ",
+      "caption": "Nhập mã yêu cầu và số điện thoại đã đăng ký.",
+      "speech": "Mở Tra cứu. Nhập mã yêu cầu cùng số điện thoại đã đăng ký để xem tiến độ và khoản tiền đã được ghi nhận. Thông tin nhận được phụ thuộc loại yêu cầu và quá trình xử lý thực tế.",
+      "duration": 10.21
+    },
+    {
+      "file": "11-guide",
+      "title": "Chuẩn bị ngày chuyển",
+      "caption": "Đánh dấu việc đã làm và xem giải đáp trong trang hướng dẫn.",
+      "speech": "Trung tâm hướng dẫn có mục lục riêng, video và danh sách chuẩn bị. Đánh dấu việc đã làm trên thiết bị của bạn. Giữ giấy tờ và đồ quý bên mình, kiểm đếm hộp và thống nhất lối bốc xếp.",
+      "duration": 10.569
+    },
+    {
+      "file": "12-support",
+      "title": "Khi cần hỗ trợ",
+      "caption": "Gửi CSKH hoặc gọi BOXANH: 0332 357 455.",
+      "speech": "Nếu có vấn đề, mở Hỗ trợ để gửi thông tin cần đối chiếu. Giữ ảnh hiện trạng và các bằng chứng liên quan. Bạn cũng có thể gọi BOXANH theo số hiển thị trên website. BOXANH, chuyển trọ, sống xanh.",
+      "duration": 12.213
+    }
+  ],
+  "duration": 132.345,
+  "resolution": "1920x1080",
+  "narration": "Microsoft An / Vietnamese",
+  "fps": 20
+}

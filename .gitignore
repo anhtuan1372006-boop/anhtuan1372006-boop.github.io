@@ -1,0 +1,15 @@
+data/*
+!data/.gitkeep
+.env
+node_modules/
+work/
+
+.runtime/
+_site/
+.env.*
+!.env.example
+*.log
+*.pid
+*.db
+*.db-shm
+*.db-wal

@@ -1,0 +1,36 @@
+{
+  "upstream": "https://github.com/google/fonts/tree/main/ofl/notoserif",
+  "upstreamFiles": [
+    {
+      "name": "NotoSerif-Italic[wdth,wght].ttf",
+      "sha": "0e60f3e9248b524e6c9a28d38fbfc147463b1f5a",
+      "download_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif-Italic%5Bwdth%2Cwght%5D.ttf"
+    },
+    {
+      "name": "NotoSerif[wdth,wght].ttf",
+      "sha": "7664d59c95d6c589f7b15017a218f7a42b93f86d",
+      "download_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif%5Bwdth%2Cwght%5D.ttf"
+    }
+  ],
+  "faces": [
+    {
+      "style": "normal",
+      "weight": 400,
+      "sourceSHA256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+      "asset": "public/assets/fonts/boxanh-serif-400-normal.woff2",
+      "assetSHA256": "99d5d79e9c06fda72789e162bb0fe74ae74f35d40ae42c3967157033e679a23d",
+      "bytes": 46380,
+      "missingProofGlyphs": []
+    },
+    {
+      "style": "italic",
+      "weight": 400,
+      "sourceSHA256": "e87acbc6c0efd0d9a20d6a8cbbda2b266c14be3a3a6f5af8ec9d7b2460570ad1",
+      "asset": "public/assets/fonts/boxanh-serif-400-italic.woff2",
+      "assetSHA256": "20fff3a60ed427cec67b25595996120e22da339290220becd410790f208d52b0",
+      "bytes": 50576,
+      "missingProofGlyphs": []
+    }
+  ],
+  "method": "Static 400, width 100; Latin, Vietnamese and punctuation share one font file per style, including layout tables."
+}

@@ -1,0 +1,11 @@
+data
+.env
+tests
+*.md
+.git
+node_modules
+work
+
+.runtime
+.vscode
+BOXANH.code-workspace
