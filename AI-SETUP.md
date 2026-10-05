@@ -2,7 +2,33 @@
 
 Bơ có trang riêng `/tro-ly-ai`, robot tím/cam ở đầu trang chủ, cẩm nang 24 chủ đề về các chức năng của BOXANH, lối mở tới từng chức năng và công cụ chuẩn bị đặt lịch. Cẩm nang, điều hướng và bản nháp đặt lịch dùng được khi chưa cấu hình AI. Trạng thái trên giao diện phân biệt rõ cẩm nang và AI tạo câu trả lời.
 
-## Bật AI thật
+## Bật mô hình chạy trên máy BOXANH
+
+Bơ hỗ trợ hai cách tạo hội thoại thật: OpenAI API hoặc mô hình ngôn ngữ chạy trên máy BOXANH bằng Ollama. Chế độ trên máy không yêu cầu khóa OpenAI và không gửi hội thoại tới OpenAI. Đây là sử dụng mô hình có sẵn với kiến thức website, không phải tự huấn luyện một mô hình ngang ChatGPT từ đầu.
+
+1. Cài Ollama từ [nguồn chính thức cho Windows](https://docs.ollama.com/windows). Bản standalone dùng trong dự án đặt ở `.runtime/`; kiểm tra SHA-256 của bản phát hành trước khi chạy. Không đưa tệp thực thi hay trọng số lên Git.
+2. Chạy dịch vụ Ollama chỉ trên `127.0.0.1:11434`, rồi tải [Qwen3 4B Instruct](https://ollama.com/library/qwen3:4b-instruct) bằng `ollama pull qwen3:4b-instruct`. Trọng số khoảng 2,5 GB; bản Windows và các thư viện cần thêm dung lượng. Cần đủ RAM, đĩa và thời gian tải.
+3. Cấu hình riêng cho tiến trình Node hoặc `.env`:
+
+```dotenv
+BOXANH_AI_PROVIDER=local
+BOXANH_LOCAL_URL=http://127.0.0.1:11434
+BOXANH_LOCAL_MODEL=qwen3:4b-instruct
+BOXANH_AI_ENABLED=1
+BOXANH_AI_DAILY_LIMIT=100
+```
+
+4. Khởi động tiến trình Node với cấu hình mới. `/api/assistant/status` kiểm tra dịch vụ và tên mô hình đã tải, trả `dataDestination:boxanh`. Giao diện hiện rõ AI trên máy BOXANH và yêu cầu đồng ý đúng nơi xử lý. Không công khai trực tiếp cổng Ollama; khách chỉ dùng API BOXANH có giới hạn.
+
+Bộ tích hợp tìm thông tin phù hợp trong cẩm nang, cung cấp mục lục toàn bộ chức năng, giữ tối đa tám tin gần nhất/8.500 ký tự cho mô hình trên máy và dùng năm công cụ có kiểm tra đầu vào. Số tiền vẫn do bộ tính giá BOXANH tạo. Không có công cụ tự gửi đơn hay đọc hồ sơ riêng. Mỗi máy xử lý một lượt AI cùng lúc, tối đa 240 giây/lượt; lỗi hoặc mất kết nối không được ghi là phản hồi hoàn tất. CPU có thể trả lời chậm; cần kiểm thử hội thoại thật trước khi vận hành.
+
+Với yêu cầu tính giá có dịch vụ/số liệu rõ hoặc sửa số liệu trong hội thoại, hệ thống giữ dữ kiện gần nhất và gọi bộ tính giá trực tiếp. Ví dụ Trọn gói, 15 hộp, 8 km, đi tầng 2 không thang máy, đến tầng trệt → 654.000đ; đổi 12 hộp, 6 km và giữ các điều kiện khác → 588.000đ. Không dùng suy đoán của mô hình để thay phép tính. Câu hỏi nhiều phương án hoặc định giá đồ cũ vẫn cần tư vấn/làm rõ. Khi mô hình đưa ra số tiền không khớp nguồn đã cung cấp, câu trả lời giá không được phát ra như kết quả đã kiểm chứng.
+
+Giao diện nhận phản hồi dạng NDJSON và vẫn tương thích SSE của bản trước. [Quick Tunnel không hỗ trợ SSE](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/); vì vậy cần kiểm tra NDJSON trên đường link công khai. Server gửi heartbeat để giữ kết nối khi mô hình đang xử lý. Bản dùng CPU vẫn có thể chậm, đặc biệt khi mới nạp mô hình; đây không phải cam kết về tốc độ hoặc chất lượng ngang ChatGPT.
+
+Máy và dịch vụ Ollama/Node phải còn chạy để AI hoạt động. GitHub Pages chỉ phục vụ giao diện; chế độ này không tạo máy chủ 24/7 trên GitHub. Khi cần phục vụ nhiều khách, triển khai lên máy chủ có tài nguyên phù hợp và giới hạn tập trung. Hệ thống không ghi hội thoại vào cơ sở dữ liệu hoặc log của ứng dụng; nội dung được xử lý trong RAM của máy chủ.
+
+## Bật OpenAI API
 
 1. Chủ dự án tạo khóa riêng tại [trang khóa API của OpenAI](https://platform.openai.com/api-keys). Cần tài khoản API có khả năng sử dụng mô hình đã chọn. Không gửi khóa trong chat, không đưa vào HTML/JavaScript phía khách và không commit lên GitHub.
 2. Trên máy chủ chạy `server.mjs`, tạo hoặc sửa `.env` riêng ở thư mục dự án. `.env` đã nằm trong `.gitignore`. Chỉ thêm các biến cần thiết, giữ nguyên cấu hình đang dùng:

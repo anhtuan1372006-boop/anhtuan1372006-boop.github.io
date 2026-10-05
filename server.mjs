@@ -101,14 +101,17 @@ function inventory(){const inv=db.prepare('SELECT * FROM inventory WHERE id=1').
 function publicTracking(record,kind){if(kind==='booking'){const p=JSON.parse(record.payload);return {kind,code:record.code,name:record.name.split(' ').slice(-1)[0],status:record.status,label:statusLabels[record.status],date:p.date,slot:p.slot,service:p.service,boxes:p.boxes,estimate:record.estimate,finalQuote:record.final_quote,credit:record.buyback_credit,createdAt:record.created_at,events:db.prepare('SELECT status,note,created_at FROM events WHERE booking_id=? ORDER BY id').all(record.id).map(e=>({...e,label:statusLabels[e.status]})),steps:bookingSteps(p.service).map(s=>({status:s,label:statusLabels[s]}))};}return {kind,code:record.code,status:record.status,label:goodsLabels[record.status],mode:record.mode,category:record.category,valuation:record.valuation,payout:record.payout,credit:record.service_credit,createdAt:record.created_at};}
 async function api(req,res,url){const route=url.pathname,method=req.method;
   if(method!=='GET')sameOrigin(req);
-  if(method==='GET'&&route==='/api/assistant/status')return json(res,assistant.status());
+  if(method==='GET'&&route==='/api/assistant/status')return json(res,await assistant.status());
   if(method==='POST'&&route==='/api/assistant/chat'){
     rate(req,'assistant',20);const messages=validateChatBody(await body(req,80000));
-    if(!assistant.status().ready)fail(503,'AI chưa được kích hoạt. Cẩm nang và biểu mẫu đặt lịch vẫn sử dụng được.');
+    if(!(await assistant.status()).ready)fail(503,'AI chưa được kích hoạt. Cẩm nang và biểu mẫu đặt lịch vẫn sử dụng được.');
     const controller=new AbortController();res.on('close',()=>controller.abort());
-    res.writeHead(200,{'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-cache, no-transform','X-Accel-Buffering':'no'});
-    const emit=value=>{if(!res.destroyed)res.write('data: '+JSON.stringify(value)+'\n\n');};
-    try{await assistant.stream(messages,{signal:controller.signal,onEvent:emit});}catch(e){if(!controller.signal.aborted)emit({type:'error',message:e.status?e.message:'Bơ chưa kết nối được dịch vụ AI. Bạn thử lại hoặc gọi BOXANH nhé.'});}finally{res.end();}return;
+    const ndjson=req.headers.accept?.includes('application/x-ndjson');
+    res.writeHead(200,{'Content-Type':ndjson?'application/x-ndjson; charset=utf-8':'text/event-stream; charset=utf-8','Cache-Control':'no-cache, no-transform','X-Accel-Buffering':'no'});
+    res.flushHeaders();
+    const heartbeat=setInterval(()=>{if(!res.destroyed)res.write(ndjson?'\n':': keepalive\n\n');},15000);
+    const emit=value=>{if(!res.destroyed)res.write(ndjson?JSON.stringify(value)+'\n':'data: '+JSON.stringify(value)+'\n\n');};
+    try{await assistant.stream(messages,{signal:controller.signal,onEvent:emit});}catch(e){if(!controller.signal.aborted)emit({type:'error',message:e.status?e.message:'Bơ chưa kết nối được dịch vụ AI. Bạn thử lại hoặc gọi BOXANH nhé.'});}finally{clearInterval(heartbeat);res.end();}return;
   }
   if(method==='GET'&&route==='/api/config')return json(res,{...config(),publicPreview:process.env.PUBLIC_PREVIEW==='1'});
   if(method==='GET'&&route==='/api/products')return json(res,db.prepare('SELECT * FROM products WHERE available=1 ORDER BY id DESC').all());

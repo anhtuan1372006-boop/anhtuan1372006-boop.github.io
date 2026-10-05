@@ -16138,7 +16138,7 @@ var Il = [
 		title: "Chính sách và quyền riêng tư",
 		href: "/chinh-sach",
 		tags: "chính sách quy định quyền riêng tư thay đổi hủy dữ liệu",
-		text: "Chính sách hiện là nguyên tắc vận hành dự kiến, cần hoàn thiện trước kinh doanh chính thức. Gồm tiếp nhận/xác nhận, báo giá/thanh toán, hộp/giao nhận, thu mua/ký gửi, thu gom, thay đổi/hủy, sự cố, quyền riêng tư và ảnh tham khảo. Chưa có tự hủy/sửa lịch sau gửi hoặc tải/xóa toàn bộ hồ sơ bởi khách; liên hệ BOXANH để xử lý. Trò chuyện AI cần đồng ý gửi nội dung tới OpenAI; không gửi mật khẩu, OTP hay thông tin thanh toán."
+		text: "Chính sách hiện là nguyên tắc vận hành dự kiến, cần hoàn thiện trước kinh doanh chính thức. Gồm tiếp nhận/xác nhận, báo giá/thanh toán, hộp/giao nhận, thu mua/ký gửi, thu gom, thay đổi/hủy, sự cố, quyền riêng tư và ảnh tham khảo. Chưa có tự hủy/sửa lịch sau gửi hoặc tải/xóa toàn bộ hồ sơ bởi khách; liên hệ BOXANH để xử lý. Trò chuyện AI cần đồng ý theo nơi xử lý được ghi trên giao diện: AI chạy trên máy chủ BOXANH hoặc OpenAI. Không gửi mật khẩu, OTP hay thông tin thanh toán."
 	},
 	{
 		id: "qr",
@@ -16159,7 +16159,7 @@ var Il = [
 		title: "Nhân vật và robot Bơ",
 		href: "/",
 		tags: "robot bơ nhân vật chuyển động lời chào âm thanh ai trò chuyện",
-		text: "Nhân vật vận chuyển trên trang chủ là hình minh họa thương hiệu, tự chuyển động nhẹ; có tạm dừng và nghe/dừng lời chào. Âm thanh không tự phát, dừng nguồn khác để tránh chồng tiếng. Robot Bơ màu tím/cam là lối mở phòng trò chuyện riêng /tro-ly-ai. Chuyển động tôn trọng lựa chọn giảm chuyển động. AI tạo câu trả lời chỉ hoạt động khi máy chủ đã cấu hình API; cẩm nang vẫn dùng được khi AI chưa bật."
+		text: "Nhân vật vận chuyển trên trang chủ là hình minh họa thương hiệu, tự chuyển động nhẹ; có tạm dừng và nghe/dừng lời chào. Âm thanh không tự phát, dừng nguồn khác để tránh chồng tiếng. Robot Bơ màu tím/cam là lối mở phòng trò chuyện riêng /tro-ly-ai. Chuyển động tôn trọng lựa chọn giảm chuyển động. AI tạo câu trả lời chỉ hoạt động khi máy chủ đã kết nối mô hình ngôn ngữ; cẩm nang vẫn dùng được khi AI chưa bật."
 	},
 	{
 		id: "operations",
@@ -16503,7 +16503,8 @@ function Jl(e) {
 //#region src/assistant.jsx
 var Yl = {
 	messages: [],
-	consent: !1
+	consent: !1,
+	consentDestination: ""
 }, Xl = {
 	moving: ke,
 	quote: Ye,
@@ -17087,10 +17088,12 @@ function au({ config: e, onQuote: t }) {
 		return fetch("/api/assistant/status", { signal: AbortSignal.any([e.signal, AbortSignal.timeout(5e3)]) }).then((e) => {
 			if (!e.ok) throw Error();
 			return e.json();
-		}).then((e) => s({
-			...e,
-			loading: !1
-		})).catch(() => {
+		}).then((e) => {
+			s({
+				...e,
+				loading: !1
+			}), e.ready && Yl.consentDestination !== (e.dataDestination || "openai") && (Yl.consent = !1, l(!1));
+		}).catch(() => {
 			e.signal.aborted || s({
 				ready: !1,
 				loading: !1,
@@ -17170,7 +17173,10 @@ function au({ config: e, onQuote: t }) {
 		try {
 			let e = await fetch("/api/assistant/chat", {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/x-ndjson"
+				},
 				body: JSON.stringify({
 					messages: ql(i, l),
 					consent: !0
@@ -17182,22 +17188,22 @@ function au({ config: e, onQuote: t }) {
 				throw Error(t.error || "Chưa kết nối được Bơ.");
 			}
 			if (!e.body) throw Error("Chưa nhận được câu trả lời.");
-			let t = e.body.getReader(), n = new TextDecoder(), r = "", a = !1;
+			let t = e.body.getReader(), n = new TextDecoder(), r = e.headers.get("content-type")?.includes("application/x-ndjson"), a = "", o = !1;
 			try {
 				for (;;) {
 					let { value: e, done: i } = await t.read();
 					if (i) break;
-					r = (r + n.decode(e, { stream: !0 })).replace(/\r\n/g, "\n");
-					let o;
-					for (; (o = r.indexOf("\n\n")) >= 0;) {
-						let e = r.slice(0, o);
-						r = r.slice(o + 2);
-						let t = e.split("\n").filter((e) => e.startsWith("data:")).map((e) => e.slice(5).trimStart()).join("\n");
+					a = (a + n.decode(e, { stream: !0 })).replace(/\r\n/g, "\n");
+					let s;
+					for (; (s = a.indexOf(r ? "\n" : "\n\n")) >= 0;) {
+						let e = a.slice(0, s);
+						a = a.slice(s + (r ? 1 : 2));
+						let t = r ? e.trim() : e.split("\n").filter((e) => e.startsWith("data:")).map((e) => e.slice(5).trimStart()).join("\n");
 						if (!t) continue;
 						let n = JSON.parse(t);
 						if (n.type === "delta") w(f, (e) => ({ text: e.text + n.text }));
 						else if (n.type === "action") w(f, (e) => ({ actions: [...e.actions, n.action] }));
-						else if (n.type === "done") a = !0, w(f, {
+						else if (n.type === "done") o = !0, w(f, {
 							text: n.text,
 							pending: !1,
 							actions: n.actions
@@ -17208,7 +17214,7 @@ function au({ config: e, onQuote: t }) {
 			} finally {
 				t.releaseLock();
 			}
-			if (!a) throw Error("Câu trả lời bị gián đoạn. Bạn có thể thử lại.");
+			if (!o) throw Error("Câu trả lời bị gián đoạn. Bạn có thể thử lại.");
 		} catch (e) {
 			w(f, {
 				pending: !1,
@@ -17361,7 +17367,7 @@ function au({ config: e, onQuote: t }) {
 							className: "bo-conversation-status",
 							children: [/* @__PURE__ */ (0, R.jsxs)("span", {
 								className: o.ready ? "bo-status-ready" : "bo-status-guide",
-								children: [/* @__PURE__ */ (0, R.jsx)("i", {}), o.loading ? "Đang kiểm tra kết nối" : o.ready ? "AI sẵn sàng hỗ trợ" : "Đang dùng cẩm nang · AI chưa bật"]
+								children: [/* @__PURE__ */ (0, R.jsx)("i", {}), o.loading ? "Đang kiểm tra kết nối" : o.ready ? o.dataDestination === "boxanh" ? "AI trên máy BOXANH sẵn sàng" : "AI sẵn sàng hỗ trợ" : "Đang dùng cẩm nang · AI chưa bật"]
 							}), /* @__PURE__ */ (0, R.jsx)("span", {
 								className: "bo-status-area",
 								children: e.area
@@ -17475,12 +17481,16 @@ function au({ config: e, onQuote: t }) {
 										type: "checkbox",
 										checked: c,
 										onChange: (e) => {
-											l(e.target.checked), Yl.consent = e.target.checked, h("");
+											l(e.target.checked), Yl.consent = e.target.checked, Yl.consentDestination = o.dataDestination || "openai", h("");
 										}
-									}), /* @__PURE__ */ (0, R.jsxs)("span", { children: ["Tôi đồng ý gửi nội dung trò chuyện tới OpenAI để nhận tư vấn AI. Không nhập mật khẩu, OTP hoặc thông tin thanh toán. ", /* @__PURE__ */ (0, R.jsx)("a", {
-										href: "/chinh-sach#bao-mat",
-										children: "Quyền riêng tư"
-									})] })]
+									}), /* @__PURE__ */ (0, R.jsxs)("span", { children: [
+										o.dataDestination === "boxanh" ? "Tôi đồng ý xử lý nội dung trò chuyện bằng AI trên máy chủ BOXANH. Không gửi nội dung tới OpenAI." : "Tôi đồng ý gửi nội dung trò chuyện tới OpenAI để nhận tư vấn AI.",
+										" Không nhập mật khẩu, OTP hoặc thông tin thanh toán. ",
+										/* @__PURE__ */ (0, R.jsx)("a", {
+											href: "/chinh-sach#bao-mat",
+											children: "Quyền riêng tư"
+										})
+									] })]
 								}),
 								/* @__PURE__ */ (0, R.jsxs)("form", {
 									className: "bo-composer",

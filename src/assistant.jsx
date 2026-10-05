@@ -5,7 +5,7 @@ import {guideTopics,guideReply,serviceNames,moneyVND} from '../public/assistant-
 import {conversationStarters,openingGreeting,suggestedPrompts,buildConversationHistory,replyBlocks} from '../public/assistant-conversation.js';
 import './assistant.css';
 
-const session={messages:[],consent:false};
+const session={messages:[],consent:false,consentDestination:''};
 const starterIcons={moving:Package,quote:Sparkles,cleaning:Sparkles,handover:Check,boxes:Package,surplus:Recycle,booking:CalendarDays,tracking:BookOpen,support:ShieldCheck,guide:BookOpen};
 const uid=()=>crypto.randomUUID();
 
@@ -37,7 +37,7 @@ export function AssistantPage({config:c,onQuote}){
  useEffect(()=>{
   const controller=new AbortController();
   fetch('/api/assistant/status',{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(5000)])})
-   .then(r=>{if(!r.ok)throw Error();return r.json();}).then(s=>setStatus({...s,loading:false}))
+   .then(r=>{if(!r.ok)throw Error();return r.json();}).then(s=>{setStatus({...s,loading:false});if(s.ready&&session.consentDestination!==(s.dataDestination||'openai')){session.consent=false;setConsent(false);}})
    .catch(()=>{if(!controller.signal.aborted)setStatus({ready:false,loading:false,offline:true});});
   return()=>{controller.abort();abort.current?.abort();};
  },[]);
@@ -58,16 +58,16 @@ export function AssistantPage({config:c,onQuote}){
   setMessages([...previous,user,{id:replyId,role:'assistant',mode:'ai',text:'',pending:true,actions:[]}]);setBusy(true);
   const controller=new AbortController();abort.current=controller;
   try{
-   const response=await fetch('/api/assistant/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:buildConversationHistory(previous,user),consent:true}),signal:controller.signal});
+   const response=await fetch('/api/assistant/chat',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/x-ndjson'},body:JSON.stringify({messages:buildConversationHistory(previous,user),consent:true}),signal:controller.signal});
    if(!response.ok){const body=await response.json();throw Error(body.error||'Chưa kết nối được Bơ.');}
    if(!response.body)throw Error('Chưa nhận được câu trả lời.');
-   const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='',finished=false;
+   const reader=response.body.getReader(),decoder=new TextDecoder(),ndjson=response.headers.get('content-type')?.includes('application/x-ndjson');let buffer='',finished=false;
    try{while(true){
     const {value,done}=await reader.read();if(done)break;
     buffer=(buffer+decoder.decode(value,{stream:true})).replace(/\r\n/g,'\n');let position;
-    while((position=buffer.indexOf('\n\n'))>=0){
-     const frame=buffer.slice(0,position);buffer=buffer.slice(position+2);
-     const data=frame.split('\n').filter(line=>line.startsWith('data:')).map(line=>line.slice(5).trimStart()).join('\n');
+    while((position=buffer.indexOf(ndjson?'\n':'\n\n'))>=0){
+     const frame=buffer.slice(0,position);buffer=buffer.slice(position+(ndjson?1:2));
+     const data=ndjson?frame.trim():frame.split('\n').filter(line=>line.startsWith('data:')).map(line=>line.slice(5).trimStart()).join('\n');
      if(!data)continue;const event=JSON.parse(data);
      if(event.type==='delta')update(replyId,m=>({text:m.text+event.text}));
      else if(event.type==='action')update(replyId,m=>({actions:[...m.actions,event.action]}));
@@ -106,7 +106,7 @@ export function AssistantPage({config:c,onQuote}){
     </div>
    </aside>
    <section className="bo-conversation" aria-label="Trò chuyện với trợ lý BOXANH">
-    <div className="bo-conversation-status"><span className={status.ready?'bo-status-ready':'bo-status-guide'}><i/>{status.loading?'Đang kiểm tra kết nối':status.ready?'AI sẵn sàng hỗ trợ':'Đang dùng cẩm nang · AI chưa bật'}</span><span className="bo-status-area">{c.area}</span></div>
+    <div className="bo-conversation-status"><span className={status.ready?'bo-status-ready':'bo-status-guide'}><i/>{status.loading?'Đang kiểm tra kết nối':status.ready?(status.dataDestination==='boxanh'?'AI trên máy BOXANH sẵn sàng':'AI sẵn sàng hỗ trợ'):'Đang dùng cẩm nang · AI chưa bật'}</span><span className="bo-status-area">{c.area}</span></div>
     <div ref={scroll} className="bo-chat-scroll" onScroll={()=>{const el=scroll.current;stick.current=el.scrollHeight-el.scrollTop-el.clientHeight<100;}}>
      {!messages.length?<div className="bo-welcome bo-welcome-v12">
       <div className="bo-opening-head"><BoRobot/><div><p className="bo-kicker">MÌNH LÀ BƠ, TRỢ LÝ BOXANH</p><h1>Hôm nay, bạn cần<br/><em>mình giúp gì?</em></h1></div></div>
@@ -123,7 +123,7 @@ export function AssistantPage({config:c,onQuote}){
     </div>
     <div className="bo-composer-area">
      {!status.loading&&!status.ready&&<div className="bo-mode-note"><BookOpen size={16}/><p><strong>AI hội thoại đang chờ kích hoạt.</strong> {status.offline?'Chưa kết nối được máy chủ. ':''}Bơ hiện hướng dẫn từ cẩm nang, chưa thể trò chuyện tự do như ChatGPT.</p></div>}
-     {status.ready&&<label className="bo-ai-consent"><input type="checkbox" checked={consent} onChange={e=>{setConsent(e.target.checked);session.consent=e.target.checked;setError('');}}/><span>Tôi đồng ý gửi nội dung trò chuyện tới OpenAI để nhận tư vấn AI. Không nhập mật khẩu, OTP hoặc thông tin thanh toán. <a href="/chinh-sach#bao-mat">Quyền riêng tư</a></span></label>}
+     {status.ready&&<label className="bo-ai-consent"><input type="checkbox" checked={consent} onChange={e=>{setConsent(e.target.checked);session.consent=e.target.checked;session.consentDestination=status.dataDestination||'openai';setError('');}}/><span>{status.dataDestination==='boxanh'?'Tôi đồng ý xử lý nội dung trò chuyện bằng AI trên máy chủ BOXANH. Không gửi nội dung tới OpenAI.':'Tôi đồng ý gửi nội dung trò chuyện tới OpenAI để nhận tư vấn AI.'} Không nhập mật khẩu, OTP hoặc thông tin thanh toán. <a href="/chinh-sach#bao-mat">Quyền riêng tư</a></span></label>}
      <form className="bo-composer" onSubmit={e=>{e.preventDefault();send(input);}}><label className="sr-only" htmlFor="bo-chat-input">Câu hỏi dành cho Bơ</label><textarea ref={inputRef} id="bo-chat-input" placeholder="Kể Bơ nghe tình huống của bạn, hoặc hỏi tiếp điều vừa trao đổi…" value={input} maxLength={1800} rows={2} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();send(input);}}}/>{busy?<button type="button" className="bo-send" aria-label="Dừng câu trả lời" onClick={()=>abort.current?.abort()}><Square size={16}/></button>:<button type="submit" className="bo-send" aria-label="Gửi câu hỏi" disabled={!input.trim()||status.loading}><Send size={19}/></button>}</form>
      {error&&<p className="bo-composer-error" role="alert">{error}</p>}
      <div className="bo-composer-footer"><button type="button" onClick={()=>setPlannerOpen(true)}><CalendarDays size={13}/> Chuẩn bị đặt lịch</button><span>Giá & lịch do BOXANH xác nhận.</span><span>{input.length?input.length+'/1.800':'Enter để gửi · Shift + Enter xuống dòng'}</span></div>

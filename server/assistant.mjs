@@ -1,6 +1,7 @@
 import {guideTopics,serviceNames,topicById} from '../public/assistant-knowledge.js';
 import {conversationStarters} from '../public/assistant-conversation.js';
 import {assistantInstructions} from './assistant-instructions.mjs';
+import {createLocalAssistant} from './assistant-local.mjs';
 
 const error=(status,message)=>Object.assign(new Error(message),{status});
 const services=Object.keys(serviceNames);
@@ -52,9 +53,10 @@ export function validateChatBody(body){
  return messages;
 }
 export function createAssistantService({config,estimate,fetchImpl=fetch,env=process.env}){
+ if(env.BOXANH_AI_PROVIDER==='local')return createLocalAssistant({config,estimate,fetchImpl,env,tools:assistantTools,executeTool:executeAssistantTool});
  let active=0,day='',turns=0;
  const ready=()=>!!env.OPENAI_API_KEY?.trim()&&env.BOXANH_AI_ENABLED!=='0';
- function status(){return {ready:ready(),provider:'OpenAI',mode:ready()?'ai':'guide',message:ready()?'AI sẵn sàng tư vấn':'AI hội thoại chưa được kích hoạt. Bạn có thể dùng cẩm nang và biểu mẫu đặt lịch.',maxMessageLength:1800};}
+ function status(){return {ready:ready(),provider:'OpenAI',dataDestination:'openai',mode:ready()?'ai':'guide',message:ready()?'AI sẵn sàng tư vấn':'AI hội thoại chưa được kích hoạt. Bạn có thể dùng cẩm nang và biểu mẫu đặt lịch.',maxMessageLength:1800};}
  async function stream(messages,{signal,onEvent}){
   if(!ready())throw error(503,'AI chưa được kích hoạt. Cẩm nang và biểu mẫu vẫn sử dụng được.');
   const currentDay=new Date(Date.now()+7*3600000).toISOString().slice(0,10);if(currentDay!==day){day=currentDay;turns=0;}
