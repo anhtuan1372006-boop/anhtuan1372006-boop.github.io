@@ -20,6 +20,14 @@ Ngày kiểm tra: 05/10/2026. Báo cáo v7/v8/v9 là lịch sử; tài liệu n�
 - Video tải được bằng byte range; MIME video và phụ đề đúng. Đã kiểm tra ảnh dựng ở chương trang chủ, bàn giao và liên hệ, đầy đủ dấu tiếng Việt.
 - Trước công khai, script quét file Git để phát hiện thư mục dữ liệu riêng và mẫu khóa phổ biến. Đây là kiểm tra phòng ngừa theo phạm vi script, không phải chứng nhận kiểm toán bảo mật.
 
-## Giới hạn vận hành
+## Kiểm tra bản GitHub công khai
+
+Workflow Publish BOXANH chạy thành công tại commit 6e19cb4; build, kiểm tra cú pháp, test và xuất bản đạt. Link: https://anhtuan1372006-boop.github.io/.
+
+17 đường dẫn công khai trả về HTTP 200; HTML trang con ẩn đúng cụm giới thiệu lớn. Video MP4, phụ đề VTT và font serif nghiêng tải được với MIME đúng. Video phát trực tiếp từ GitHub: readyState 4, thời lượng 132,42 giây theo trình duyệt, không có lỗi media. Thời lượng nội dung theo storyboard là 132,3 giây.
+
+Đã thử chuyển từ thẻ dọn phòng tại trang chủ sang trang riêng và quay lại, tính giá Trọn gói 500.000đ và đổi sang thuê 10 hộp 200.000đ qua API. Không phát hiện lỗi console trên các màn hình thử này. Ảnh trang dọn phòng công khai không thiếu tài nguyên hoặc tràn ngang. Không gửi yêu cầu khách hàng khi kiểm tra bản công khai.
+
+## Giới hạn vận hành hiện tại
 
 Frontend GitHub Pages hoạt động độc lập; API hiện qua đường hầm tới máy chủ trên máy tính. Đặt lịch, tra cứu, đồ cũ và CSKH cần API hoạt động. Để phục vụ 24/7 cần hosting backend riêng. Giá tham khảo, QR hộp/tem niêm phong còn là minh họa; chưa có thanh toán, GPS hoặc SMS tự động. Chức năng hiện có được giữ lại, không biến quy trình minh họa thành cam kết thực tế.
