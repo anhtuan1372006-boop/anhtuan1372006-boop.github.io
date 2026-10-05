@@ -2,6 +2,7 @@ import {spawn} from 'node:child_process';
 import {cp,readFile,writeFile,mkdir,rm,mkdtemp} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const output=path.join(root,'_site');
 const work=path.join(root,'work');await mkdir(work,{recursive:true});
@@ -20,9 +21,20 @@ try{
   if(path.resolve(output)!==path.join(root,'_site'))throw new Error('Unexpected export target.');
   await rm(output,{recursive:true,force:true});
   await cp(path.join(root,'public'),output,{recursive:true});
+  // Keep the SSR markup and its client bundle in the same release on cached browsers.
+  const digest=source=>createHash('sha256').update(source).digest('hex').slice(0,16);
+  const portalVersion=digest(await readFile(path.join(output,'portal/app.js')));
+  const styleVersion=digest(await readFile(path.join(output,'portal/portal.css')));
+  const appSource=(await readFile(path.join(output,'app.js'),'utf8')).replace("from '/portal/app.js'","from '/portal/app.js?v="+portalVersion+"'");
+  const appVersion=digest(appSource);
+  await writeFile(path.join(output,'app.js'),appSource);
   for(const route of routes){
     const response=await fetch(origin+route);if(!response.ok)throw new Error('Cannot export '+route);
     let html=await response.text();
+    html=html.replaceAll('href="/portal/app.js"','href="/portal/app.js?v='+portalVersion+'"')
+      .replaceAll('href="/portal/portal.css"','href="/portal/portal.css?v='+styleVersion+'"')
+      .replaceAll('href="/app.js"','href="/app.js?v='+appVersion+'"')
+      .replaceAll('src="/app.js"','src="/app.js?v='+appVersion+'"');
     html=html.replace(/(<script type="application\/json" id="site-config">)([\s\S]*?)(<\/script>)/,(_,open,json,close)=>open+JSON.stringify({...JSON.parse(json),apiBase,publicPreview:true}).replaceAll('<','\\u003c')+close);
     const target=route==='/'?output:path.join(output,route.slice(1));await mkdir(target,{recursive:true});
     await writeFile(path.join(target,'index.html'),html);
