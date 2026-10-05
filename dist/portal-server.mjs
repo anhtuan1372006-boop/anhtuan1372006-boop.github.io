@@ -2175,6 +2175,7 @@ var guideTopics = [
 		text: "GitHub Pages phục vụ giao diện; đặt yêu cầu, tra cứu, danh mục thật và AI cần máy chủ dữ liệu đang chạy. Chưa có thanh toán trực tuyến, giỏ hàng, SMS/email/Zalo tự động, GPS, tài khoản khách hoặc lịch trống theo thời gian thực. Khi mất kết nối, thử lại hoặc gọi BOXANH; không coi lỗi là đã nhận đơn. AI chưa bật sẽ được ghi rõ; trả lời từ cẩm nang không phải câu trả lời do mô hình AI tạo."
 	}
 ];
+var topicById = (id) => guideTopics.find((t) => t.id === id);
 var serviceNames = {
 	small: "Gọn nhẹ",
 	full: "Trọn gói",
@@ -2217,51 +2218,301 @@ function lookupGuide(query) {
 		["ky gui", "surplus"],
 		["thu mua", "surplus"],
 		["do hong", "surplus"],
+		["do thua", "surplus"],
+		["khong mang theo", "surplus"],
 		["tra cuu", "tracking"],
 		["dat lich", "booking"],
 		["tai anh", "photos"],
 		["bao gia", "quote"],
 		["chi phi", "quote"],
+		["gia bao nhieu", "quote"],
 		["huong dan", "guide"],
 		["mat do", "support"],
-		["su co", "support"]
+		["su co", "support"],
+		["don phong", "cleaning"],
+		["ve sinh phong", "cleaning"],
+		["ban giao", "handover"],
+		["tra phong", "handover"],
+		["thue hop", "boxes"],
+		["thue thung", "boxes"],
+		["chuyen tro", "moving"],
+		["chuyen do", "moving"],
+		["gon nhe", "services"],
+		["tron goi", "services"],
+		["chon goi", "services"]
 	].filter(([phrase]) => q.includes(phrase));
+	const explicit = new Set(intent.map(([, id]) => id));
 	return guideTopics.map((t) => {
 		const title = normalize(t.title), tags = new Set(normalize(t.tags).split(/[^a-z0-9]+/)), body = normalize(t.text);
 		return {
 			topic: t,
 			score: tokens.reduce((n, w) => n + (title.split(/[^a-z0-9]+/).includes(w) ? 5 : tags.has(w) ? 3 : body.split(/[^a-z0-9]+/).includes(w) ? 1 : 0), 0) + intent.filter(([, id]) => id === t.id).length * 30
 		};
-	}).filter((x) => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 1).map((x) => x.topic);
+	}).filter((x) => x.score >= 5).sort((a, b) => b.score - a.score).slice(0, explicit.size > 1 ? Math.min(3, explicit.size) : 1).map((x) => x.topic);
 }
-function guideReply(query, c) {
-	if (/^(xin chào|chào|hello|hi)[!. ]*$/i.test(query.trim())) return {
-		text: "Chào bạn, mình là Bơ. Cẩm nang BOXANH có thể giúp bạn chọn dịch vụ, tìm hướng dẫn và chuẩn bị yêu cầu. Bạn đang muốn chuyển trọ, dọn phòng hay xử lý đồ không mang theo?",
-		links: guideTopics.filter((t) => [
+function guideReply(query, c, history = []) {
+	const q = normalize(query.trim()), links = (ids) => ids.map(topicById).filter(Boolean);
+	if (/^(xin chao|chao|hello|hi|alo)[!. ]*$/.test(q)) return {
+		text: "Chào bạn! Mình có thể giúp bạn chọn dịch vụ, xem cách tính chi phí và chuẩn bị yêu cầu tại " + c.area + ". Bạn đang cần chuyển trọ, dọn phòng, bàn giao hay xử lý đồ thừa?",
+		links: links([
 			"services",
 			"booking",
 			"guide"
-		].includes(t.id))
+		])
 	};
-	const found = lookupGuide(query);
+	if (/(chuc nang|lam duoc gi|giup.*nhung gi|tat ca.*website)/.test(q)) return {
+		text: "Bạn có thể bắt đầu từ những việc này:\n\n- Chọn và so sánh dịch vụ chuyển trọ.\n- Ước tính chi phí, xem phụ phí, chuẩn bị đặt lịch.\n- Đặt khảo sát dọn phòng hoặc bàn giao phòng.\n- Thuê hộp tái sử dụng.\n- Gửi đồ để thu mua, ký gửi hoặc phân loại.\n- Xem đồ cũ và đăng ký quan tâm khi có hàng thật.\n- Tra cứu yêu cầu và báo sự cố.\n- Xem video, danh sách chuẩn bị và chính sách.\n\nBạn muốn giải quyết việc nào trước? Mục “Khám phá mọi chức năng” có đầy đủ từng lối mở.",
+		links: links([
+			"services",
+			"quote",
+			"booking",
+			"cleaning",
+			"handover",
+			"boxes",
+			"goods",
+			"market",
+			"tracking",
+			"support",
+			"guide",
+			"policy"
+		])
+	};
+	const previous = [...history].reverse().find((m) => m.role === "assistant" && m.links?.length)?.links[0];
+	let found = lookupGuide(query);
+	if (previous && /(cai do|goi do|viec do|the thi|nhu vay|con gia|bao nhieu|co duoc khong|tiep theo)/.test(q) && !/(don phong|ban giao|chuyen tro|thue hop|ky gui|thu mua|tra cuu)/.test(q)) found = links([previous.id]);
+	if (/(lan dau|tu dong|it do|di mot minh|ngan sach|tiet kiem)/.test(q) && !/(don phong|ban giao|thu mua|ky gui)/.test(q)) found = links(["services"]);
+	if (found[0] && ["cleaning", "handover"].includes(found[0].id) && /(gia|chi phi|bao nhieu)/.test(q)) return {
+		text: (found[0].id === "cleaning" ? "Dọn phòng" : "Bàn giao phòng") + " hiện chưa có giá cố định. BOXANH cần xem diện tích, hiện trạng và phạm vi cần hỗ trợ rồi mới thống nhất chi phí.\n\nBạn có thể chuẩn bị mô tả và ảnh phòng, rồi mở “Chuẩn bị đặt lịch” để tạo nhu cầu khảo sát. Giá được xác nhận sau trao đổi, chưa có khoản thanh toán ở bước này.",
+		links: found
+	};
 	if (!found.length) return {
-		text: "Mình chưa tìm thấy nội dung phù hợp trong cẩm nang. Bạn thử chọn một chủ đề bên dưới hoặc gọi " + c.phone + " để đội BOXANH tư vấn trực tiếp nhé.",
-		links: guideTopics.filter((t) => [
+		text: "Mình chưa chắc bạn đang cần hỗ trợ việc nào. Bạn có thể nói cụ thể hơn, chẳng hạn “chuyển ít đồ, muốn tiết kiệm” hoặc “cần dọn phòng trước khi trả trọ”.\n\nHiện mình đang trả lời từ cẩm nang, chưa có AI hội thoại để xử lý mọi tình huống. Nếu cần trao đổi trực tiếp, đội BOXANH ở số " + c.phone + ".",
+		links: links([
 			"services",
 			"booking",
 			"support"
-		].includes(t.id))
+		])
 	};
-	let text = found.map((t) => t.title + "\n" + t.text).join("\n\n");
-	if (found.some((t) => [
-		"services",
-		"quote",
-		"fees"
-	].includes(t.id))) text += "\n\nGiá tham khảo hiện tại: Gọn nhẹ " + moneyVND(c.smallBase) + "; Trọn gói " + moneyVND(c.fullBase) + "; thuê 10 hộp " + moneyVND(c.boxBase + 10 * c.boxUnit) + ". Dọn/bàn giao cần khảo sát. Giá cuối cùng do BOXANH xác nhận.";
+	const answers = {
+		services: "Nếu bạn tự đóng đồ và chủ yếu cần chuyển đi, hãy xem Gọn nhẹ. Nếu muốn được hỗ trợ đóng gói cùng vận chuyển, hãy xem Trọn gói. Khi đã có xe, bạn có thể chỉ thuê hộp.\n\nGiá gói tham khảo hiện tại: Gọn nhẹ từ " + moneyVND(c.smallBase) + ", Trọn gói từ " + moneyVND(c.fullBase) + ". Phụ phí và giá cuối cùng cần khảo sát.\n\nBạn muốn tự đóng đồ hay cần đội BOXANH hỗ trợ?",
+		moving: "Mình sẽ giúp bạn bắt đầu từ ba việc: chọn phạm vi hỗ trợ, ước tính theo đồ đạc/quãng đường, rồi gửi yêu cầu để BOXANH xác nhận. Hộp có thể được giao trước ngày chuyển 1–2 ngày và thu hồi sau khi bạn lấy đồ ra.\n\nBạn muốn tự đóng đồ hay cần hỗ trợ đóng gói?",
+		cleaning: "Dọn phòng cần xem hiện trạng và phạm vi công việc trước khi báo giá; hiện chưa có một mức giá áp dụng cho mọi phòng. Bạn gửi địa chỉ, diện tích, ngày mong muốn, mô tả và ảnh nếu có qua biểu mẫu khảo sát.\n\nBạn cần dọn phòng cũ trước khi trả trọ hay phòng mới trước khi vào ở?",
+		handover: "Trước khi bàn giao, nên kiểm tra ảnh hiện trạng, nội thất, chỉ số điện/nước, khoản cần đối soát và chìa khóa/lịch hẹn. BOXANH hỗ trợ ghi nhận, còn tiền cọc do bạn và chủ trọ đối soát theo thỏa thuận.\n\nBạn muốn mở danh sách kiểm tra hay chuẩn bị khảo sát bàn giao?",
+		surplus: "Đồ còn dùng được có thể gửi để thẩm định thu mua hoặc ký gửi. Thu mua chỉ được trừ phí sau thỏa thuận, tiếp nhận và phân bổ hợp lệ; ký gửi thanh toán sau khi bán được. Đồ hỏng cần xác nhận kênh thu gom phù hợp.\n\nBạn đang có đồ còn dùng được hay đồ đã hỏng?",
+		boxes: "Nếu đã có phương tiện, bạn có thể chỉ thuê hộp. Hộp được giao theo lịch thống nhất, kiểm đếm khi bàn giao và thu hồi, rồi vệ sinh để dùng tiếp. Thời gian thuê và gia hạn cần xem điều kiện trước khi nhận.\n\nBạn muốn xem điều kiện thuê hay chuẩn bị yêu cầu thuê hộp?",
+		quote: "Ước tính cần biết gói dịch vụ, số hộp, quãng đường, tầng ở hai nơi, thang máy và đồ cồng kềnh. Dọn phòng/bàn giao phải khảo sát hiện trạng. Bạn dùng nút “Chuẩn bị đặt lịch” để nhập nhu cầu và xem giá từ bộ tính thật.\n\nBạn cần ước tính chuyển trọ, thuê hộp hay khảo sát phòng?",
+		booking: "Đặt lịch chuyển đồ gồm bốn bước: chọn gói/đồ đạc → địa chỉ/ngày/điều kiện vận chuyển → đồ thừa → liên hệ và xem lại. Chọn “Chuẩn bị đặt lịch” để tạo bản nháp; khi kiểm tra xong bạn tự gửi yêu cầu trên biểu mẫu.\n\nGửi yêu cầu chưa có nghĩa là đã chốt lịch. BOXANH sẽ trao đổi và xác nhận riêng. Bạn cần chuyển trọ, thuê hộp, dọn phòng hay bàn giao?",
+		support: "Mình hiểu việc gặp vấn đề với đồ đạc khiến bạn lo lắng. Bạn hãy giữ ảnh, hộp/tem nếu có và mô tả cụ thể. Mở CSKH, nhập mã BX cùng số điện thoại đã đăng ký để gửi hồ sơ và nhận mã SC.\n\nĐội BOXANH sẽ đối chiếu; Bơ không tự kết luận trách nhiệm hay mức bồi thường. Nếu cần hỗ trợ trực tiếp, gọi " + c.phone + ".",
+		tracking: "Bạn mở Tra cứu, nhập mã yêu cầu và đúng số điện thoại đã đăng ký. Website hỗ trợ mã BX, DG, MH và SC. Tiến độ do nhân sự cập nhật, chưa có GPS trực tiếp.\n\nBạn không cần gửi mã hoặc số điện thoại trong cuộc trò chuyện; hãy nhập ở trang tra cứu."
+	};
 	return {
-		text,
+		text: found.length === 1 ? answers[found[0].id] || found[0].title + "\n\n" + found[0].text : found.map((t) => "**" + t.title + "**\n" + t.text).join("\n\n") + "\n\nBạn muốn mình hướng dẫn phần nào trước?",
 		links: found
 	};
+}
+//#endregion
+//#region public/assistant-conversation.js
+var conversationStarters = [
+	{
+		id: "moving",
+		title: "Mình cần chuyển trọ",
+		prompt: "Mình muốn chuyển trọ. Bạn hỏi mình từng bước để chọn dịch vụ phù hợp nhé.",
+		topic: "moving"
+	},
+	{
+		id: "quote",
+		title: "Mình muốn biết chi phí",
+		prompt: "Giúp mình ước tính chi phí. Bạn cần những thông tin gì?",
+		topic: "quote"
+	},
+	{
+		id: "cleaning",
+		title: "Dọn phòng cũ hoặc mới",
+		prompt: "Mình cần dọn phòng. Bạn tư vấn phạm vi công việc và cách gửi khảo sát nhé.",
+		topic: "cleaning"
+	},
+	{
+		id: "handover",
+		title: "Chuẩn bị trả phòng",
+		prompt: "Mình sắp trả phòng. Cần kiểm tra những gì trước khi bàn giao?",
+		topic: "handover"
+	},
+	{
+		id: "surplus",
+		title: "Xử lý đồ không mang theo",
+		prompt: "Mình có đồ không muốn mang theo. Giúp mình chọn thu mua, ký gửi hoặc thu gom.",
+		topic: "surplus"
+	},
+	{
+		id: "boxes",
+		title: "Mình chỉ cần thuê hộp",
+		prompt: "Mình đã có xe, chỉ cần thuê hộp. Cách giao, sử dụng và thu hồi thế nào?",
+		topic: "boxes"
+	},
+	{
+		id: "booking",
+		title: "Chuẩn bị đặt lịch",
+		prompt: "Mình muốn chuẩn bị đặt lịch. Hãy hỏi thông tin còn thiếu, đừng hỏi lại những gì mình đã nói.",
+		topic: "booking"
+	},
+	{
+		id: "tracking",
+		title: "Tra cứu yêu cầu đã gửi",
+		prompt: "Mình đã gửi yêu cầu rồi. Làm sao xem tiến độ?",
+		topic: "tracking"
+	},
+	{
+		id: "support",
+		title: "Mình đang gặp sự cố",
+		prompt: "Mình gặp vấn đề với đồ đạc sau chuyển trọ. Bạn hướng dẫn mình cách báo sự cố nhé.",
+		topic: "support"
+	},
+	{
+		id: "guide",
+		title: "Khám phá toàn bộ website",
+		prompt: "Bạn có thể giúp mình những gì? Giới thiệu tất cả chức năng chính và cách bắt đầu.",
+		topic: "guide"
+	}
+];
+function openingGreeting(area) {
+	return `Chào bạn, mình là Bơ, trợ lý của BOXANH tại ${area}. Hôm nay bạn đang cần chuyển trọ, dọn phòng, bàn giao phòng hay xử lý đồ không mang theo?\n\nBạn có thể kể tình huống của mình hoặc chọn một gợi ý bên dưới. Mình sẽ cùng bạn tìm cách bắt đầu phù hợp.`;
+}
+var followUps = {
+	moving: [
+		"Mình tự đóng đồ được, nên chọn gói nào?",
+		"Nếu muốn hỗ trợ từ đóng gói đến chuyển đồ thì sao?",
+		"Cần chuẩn bị những gì trước ngày chuyển?"
+	],
+	services: [
+		"So sánh Gọn nhẹ và Trọn gói cho mình.",
+		"Mình có xe rồi, thuê hộp thế nào?",
+		"Giúp mình chuẩn bị đặt lịch."
+	],
+	quote: [
+		"Những khoản phụ phí nào có thể phát sinh?",
+		"Mình muốn chuẩn bị bản nháp để xem chi phí.",
+		"Nếu có đồ cũ thì có được giảm phí không?"
+	],
+	fees: [
+		"Nếu có thang máy thì phí cầu thang tính thế nào?",
+		"Giá dự kiến có phải giá cuối cùng không?",
+		"Giúp mình chuẩn bị đặt lịch."
+	],
+	cleaning: [
+		"Dọn phòng cũ và phòng mới khác nhau thế nào?",
+		"Cần gửi ảnh và diện tích phòng thế nào?",
+		"Giúp mình chuẩn bị khảo sát dọn phòng."
+	],
+	handover: [
+		"Cho mình danh sách kiểm tra trước bàn giao.",
+		"BOXANH có quyết định tiền cọc không?",
+		"Giúp mình chuẩn bị khảo sát bàn giao."
+	],
+	boxes: [
+		"Khi nào giao và thu hồi hộp?",
+		"Giữ hộp lâu hơn có được không?",
+		"Mình muốn chuẩn bị yêu cầu thuê hộp."
+	],
+	surplus: [
+		"Thu mua và ký gửi khác nhau thế nào?",
+		"Đồ hỏng thì xử lý như thế nào?",
+		"Hướng dẫn gửi ảnh và hồ sơ đồ cũ."
+	],
+	goods: [
+		"Ký gửi có được trừ phí chuyển ngay không?",
+		"Mình muốn liên kết đồ cũ với đơn chuyển trọ.",
+		"Cần ảnh và thông tin nào để thẩm định?"
+	],
+	booking: [
+		"Chưa biết số hộp thì làm thế nào?",
+		"Cần nhập thông tin liên hệ ở đâu?",
+		"Gửi yêu cầu có nghĩa là đã chốt lịch chưa?"
+	],
+	survey: [
+		"Dọn phòng có giá cố định không?",
+		"Cần ảnh và diện tích phòng thế nào?",
+		"Sau khi gửi khảo sát thì bước tiếp theo là gì?"
+	],
+	tracking: [
+		"Mình quên mã yêu cầu thì làm thế nào?",
+		"Có xem vị trí xe theo GPS không?",
+		"Mình cần đội BOXANH hỗ trợ trực tiếp."
+	],
+	support: [
+		"Cần giữ những bằng chứng gì khi báo sự cố?",
+		"Hướng dẫn gửi hồ sơ sự cố.",
+		"Sau khi gửi, mình theo dõi phản hồi ở đâu?"
+	],
+	guide: [
+		"Chỉ cho mình cách đặt lịch.",
+		"Mở hướng dẫn chuẩn bị ngày chuyển.",
+		"Có những chức năng nào đang hoạt động?"
+	]
+};
+function suggestedPrompts(messages) {
+	const last = messages.at(-1);
+	if (last?.pending || last?.error) return [];
+	const supplied = last?.actions?.find((a) => a.type === "suggestions")?.prompts;
+	if (supplied?.length) return supplied.slice(0, 3);
+	if (last?.actions?.some((a) => ["draft", "quote"].includes(a.type))) return [
+		"Giải thích giúp mình các khoản trong ước tính.",
+		"Nếu mình thay đổi số hộp thì sao?",
+		"Mình cần kiểm tra gì trước khi gửi yêu cầu?"
+	];
+	const latestUser = [...messages].reverse().find((m) => m.role === "user");
+	return followUps[last?.links?.[0]?.id || lookupGuide(latestUser?.text || "")[0]?.id] || [
+		"Giúp mình chọn dịch vụ phù hợp.",
+		"Mình muốn biết chi phí dự kiến.",
+		"Hướng dẫn mình bước tiếp theo."
+	];
+}
+function buildConversationHistory(messages, user) {
+	const history = [];
+	let characters = 0;
+	for (const message of [...messages, user].filter((m) => !m.error && !m.pending && (m.text || m.actions?.length)).slice(-16).reverse()) {
+		let content = (message.text || "").slice(0, 2500);
+		const draft = message.actions?.filter((a) => ["draft", "quote"].includes(a.type)).map((a) => ({
+			draft: a.draft,
+			quote: {
+				total: a.quote?.total,
+				needsSurvey: a.quote?.needsSurvey
+			},
+			assumptions: a.assumptions,
+			bookingCreated: false
+		}));
+		if (draft?.length) content += "\nThông tin bản nháp đã hiển thị (cần công cụ kiểm tra lại): " + JSON.stringify(draft);
+		content = content.slice(0, 4e3);
+		if (characters + content.length > 18e3) break;
+		characters += content.length;
+		history.unshift({
+			role: message.role,
+			content
+		});
+	}
+	return history;
+}
+function replyBlocks(text) {
+	return text.split(/\n\n+/).map((block) => {
+		const lines = block.split("\n");
+		if (lines.every((line) => /^\s*[-•]\s+/.test(line))) return {
+			kind: "list",
+			ordered: false,
+			lines: lines.map((l) => l.replace(/^\s*[-•]\s+/, ""))
+		};
+		if (lines.every((line) => /^\s*\d+[.)]\s+/.test(line))) return {
+			kind: "list",
+			ordered: true,
+			lines: lines.map((l) => l.replace(/^\s*\d+[.)]\s+/, ""))
+		};
+		if (/^#{1,3} /.test(block) && lines.length === 1) return {
+			kind: "heading",
+			text: block.replace(/^#{1,3} /, "")
+		};
+		return {
+			kind: "paragraph",
+			text: block
+		};
+	});
 }
 //#endregion
 //#region src/assistant.jsx
@@ -2269,28 +2520,18 @@ var session = {
 	messages: [],
 	consent: false
 };
-var welcomePrompts = [
-	[
-		"Chọn gói cùng Bơ",
-		"Mình chuyển trọ lần đầu, nên chọn gói nào?",
-		Package
-	],
-	[
-		"Lên kế hoạch chuyển",
-		"Mình muốn chuẩn bị đặt lịch chuyển trọ.",
-		CalendarDays
-	],
-	[
-		"Tìm chỗ cho đồ thừa",
-		"Thu mua và ký gửi đồ cũ khác nhau thế nào?",
-		Recycle
-	],
-	[
-		"Biết ngay cách dùng",
-		"Hướng dẫn mình các chức năng trên website.",
-		BookOpen
-	]
-];
+var starterIcons = {
+	moving: Package,
+	quote: Sparkles,
+	cleaning: Sparkles,
+	handover: Check,
+	boxes: Package,
+	surplus: Recycle,
+	booking: CalendarDays,
+	tracking: BookOpen,
+	support: ShieldCheck,
+	guide: BookOpen
+};
 var uid = () => crypto.randomUUID();
 function BoRobot({ mini = false, paused = false }) {
 	const id = React.useId().replaceAll(":", "");
@@ -2569,10 +2810,13 @@ function AIHomeInvite() {
 		})
 	});
 }
+function Emphasis({ text }) {
+	return text.split(/(\*\*[^*\n]+\*\*)/g).map((part, i) => part.startsWith("**") && part.endsWith("**") ? /* @__PURE__ */ jsx("strong", { children: part.slice(2, -2) }, i) : part);
+}
 function SafeText({ text }) {
 	return /* @__PURE__ */ jsx("div", {
 		className: "bo-message-text",
-		children: text.split(/\n\n+/).map((p, i) => /* @__PURE__ */ jsx("p", { children: p }, i))
+		children: replyBlocks(text).map((block, i) => block.kind === "list" ? React.createElement(block.ordered ? "ol" : "ul", { key: i }, block.lines.map((line, j) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(Emphasis, { text: line }) }, j))) : block.kind === "heading" ? /* @__PURE__ */ jsx("h3", { children: /* @__PURE__ */ jsx(Emphasis, { text: block.text }) }, i) : /* @__PURE__ */ jsx("p", { children: /* @__PURE__ */ jsx(Emphasis, { text: block.text }) }, i))
 	});
 }
 function SourceLinks({ links }) {
@@ -2858,10 +3102,16 @@ function Message({ message, onQuote, config }) {
 	});
 }
 function AssistantPage({ config: c, onQuote }) {
-	const [messages, setMessages] = useState(() => session.messages), [input, setInput] = useState(""), [status, setStatus] = useState({
+	const [messages, setMessages] = useState(() => session.messages.map((m) => m.pending ? {
+		...m,
+		pending: false,
+		error: "Câu trả lời trước đã dừng khi bạn rời trang."
+	} : m));
+	const [input, setInput] = useState(""), [status, setStatus] = useState({
 		ready: false,
 		loading: true
-	}), [consent, setConsent] = useState(session.consent), [busy, setBusy] = useState(false), [open, setOpen] = useState(false), [error, setError] = useState(""), [resetOpen, setResetOpen] = useState(false), [plannerOpen, setPlannerOpen] = useState(false);
+	}), [consent, setConsent] = useState(session.consent);
+	const [busy, setBusy] = useState(false), [open, setOpen] = useState(false), [error, setError] = useState(""), [resetOpen, setResetOpen] = useState(false), [plannerOpen, setPlannerOpen] = useState(false);
 	const scroll = useRef(null), abort = useRef(null), inputRef = useRef(null), stick = useRef(true);
 	useEffect(() => {
 		const controller = new AbortController();
@@ -2871,7 +3121,7 @@ function AssistantPage({ config: c, onQuote }) {
 		}).then((s) => setStatus({
 			...s,
 			loading: false
-		})).catch((e) => {
+		})).catch(() => {
 			if (!controller.signal.aborted) setStatus({
 				ready: false,
 				loading: false,
@@ -2893,18 +3143,18 @@ function AssistantPage({ config: c, onQuote }) {
 			...typeof change === "function" ? change(x) : change
 		} : x));
 	}
-	function showTopic(t) {
+	function showTopic(topic) {
 		stick.current = true;
 		setOpen(false);
 		setMessages((m) => [...m, {
 			id: uid(),
 			role: "assistant",
 			mode: "guide",
-			text: t.title + "\n" + t.text,
-			links: [t]
+			text: topic.title + "\n\n" + topic.text,
+			links: [topic]
 		}]);
 	}
-	async function send(text) {
+	async function send(text, previous = messages) {
 		const content = text.trim();
 		if (busy || !content) return;
 		if (content.length > 1800) {
@@ -2912,11 +3162,14 @@ function AssistantPage({ config: c, onQuote }) {
 			return;
 		}
 		if (status.loading) {
-			setError("Đang kiểm tra kết nối, bạn thử lại sau một chút nhé.");
+			setInput(content);
+			setError("Bơ đang kiểm tra kết nối. Câu hỏi của bạn vẫn ở đây.");
 			return;
 		}
 		if (status.ready && !consent) {
-			setError("Đánh dấu đồng ý gửi nội dung đến AI trước khi trò chuyện.");
+			setInput(content);
+			setError("Vui lòng đồng ý gửi nội dung đến AI trước khi trò chuyện. Câu hỏi của bạn đã được giữ lại.");
+			inputRef.current?.focus();
 			return;
 		}
 		setError("");
@@ -2929,22 +3182,22 @@ function AssistantPage({ config: c, onQuote }) {
 			text: content
 		}, replyId = uid();
 		if (!status.ready) {
-			const r = guideReply(content, c);
-			setMessages((m) => [
-				...m,
+			const reply = guideReply(content, c, previous);
+			setMessages([
+				...previous,
 				user,
 				{
 					id: replyId,
 					role: "assistant",
 					mode: "guide",
-					text: r.text,
-					links: r.links
+					text: reply.text,
+					links: reply.links
 				}
 			]);
 			return;
 		}
-		setMessages((m) => [
-			...m,
+		setMessages([
+			...previous,
 			user,
 			{
 				id: replyId,
@@ -2959,29 +3212,18 @@ function AssistantPage({ config: c, onQuote }) {
 		const controller = new AbortController();
 		abort.current = controller;
 		try {
-			const history = [];
-			let chars = 0;
-			for (const m of [...messages.filter((m) => m.text && !m.error && m.mode !== "guide"), user].slice(-12).reverse()) {
-				const content = m.text.slice(0, 3e3);
-				if (chars + content.length > 16e3) break;
-				chars += content.length;
-				history.unshift({
-					role: m.role,
-					content
-				});
-			}
 			const response = await fetch("/api/assistant/chat", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					messages: history,
+					messages: buildConversationHistory(previous, user),
 					consent: true
 				}),
 				signal: controller.signal
 			});
 			if (!response.ok) {
-				const b = await response.json();
-				throw Error(b.error || "Chưa kết nối được Bơ.");
+				const body = await response.json();
+				throw Error(body.error || "Chưa kết nối được Bơ.");
 			}
 			if (!response.body) throw Error("Chưa nhận được câu trả lời.");
 			const reader = response.body.getReader(), decoder = new TextDecoder();
@@ -2990,30 +3232,30 @@ function AssistantPage({ config: c, onQuote }) {
 				while (true) {
 					const { value, done } = await reader.read();
 					if (done) break;
-					buffer += decoder.decode(value, { stream: true });
-					let pos;
-					while ((pos = buffer.indexOf("\n\n")) >= 0) {
-						const frame = buffer.slice(0, pos);
-						buffer = buffer.slice(pos + 2);
-						const data = frame.split("\n").find((l) => l.startsWith("data:"));
+					buffer = (buffer + decoder.decode(value, { stream: true })).replace(/\r\n/g, "\n");
+					let position;
+					while ((position = buffer.indexOf("\n\n")) >= 0) {
+						const frame = buffer.slice(0, position);
+						buffer = buffer.slice(position + 2);
+						const data = frame.split("\n").filter((line) => line.startsWith("data:")).map((line) => line.slice(5).trimStart()).join("\n");
 						if (!data) continue;
-						const e = JSON.parse(data.slice(5));
-						if (e.type === "delta") update(replyId, (m) => ({ text: m.text + e.text }));
-						else if (e.type === "action") update(replyId, (m) => ({ actions: [...m.actions, e.action] }));
-						else if (e.type === "done") {
+						const event = JSON.parse(data);
+						if (event.type === "delta") update(replyId, (m) => ({ text: m.text + event.text }));
+						else if (event.type === "action") update(replyId, (m) => ({ actions: [...m.actions, event.action] }));
+						else if (event.type === "done") {
 							finished = true;
 							update(replyId, {
-								text: e.text,
+								text: event.text,
 								pending: false,
-								actions: e.actions
+								actions: event.actions
 							});
-						} else if (e.type === "error") throw Error(e.message);
+						} else if (event.type === "error") throw Error(event.message);
 					}
 				}
 			} finally {
 				reader.releaseLock();
 			}
-			if (!finished) throw Error("Câu trả lời bị gián đoạn. Bạn có thể gửi lại câu hỏi.");
+			if (!finished) throw Error("Câu trả lời bị gián đoạn. Bạn có thể thử lại.");
 		} catch (e) {
 			update(replyId, {
 				pending: false,
@@ -3024,6 +3266,10 @@ function AssistantPage({ config: c, onQuote }) {
 			abort.current = null;
 		}
 	}
+	function retry() {
+		const index = messages.findLastIndex((m) => m.role === "user");
+		if (index >= 0) send(messages[index].text, messages.slice(0, index));
+	}
 	function prepared(action) {
 		stick.current = true;
 		setOpen(false);
@@ -3031,7 +3277,7 @@ function AssistantPage({ config: c, onQuote }) {
 			id: uid(),
 			role: "assistant",
 			mode: "guide",
-			text: "Đây là bản nháp nhu cầu của bạn. Kiểm tra thông tin bên dưới rồi tiếp tục trên biểu mẫu đặt lịch.",
+			text: "Mình đã chuẩn bị bản nháp bên dưới. Bạn kiểm tra thông tin và chi phí, rồi tiếp tục trên biểu mẫu khi sẵn sàng.",
 			actions: [action]
 		}]);
 	}
@@ -3044,6 +3290,7 @@ function AssistantPage({ config: c, onQuote }) {
 		setResetOpen(false);
 		stick.current = true;
 	}
+	const prompts = messages.length ? suggestedPrompts(messages) : [];
 	return /* @__PURE__ */ jsxs("div", {
 		className: "bo-chat-page",
 		"data-assistant-page": true,
@@ -3097,11 +3344,11 @@ function AssistantPage({ config: c, onQuote }) {
 								children: [
 									/* @__PURE__ */ jsx("span", { children: "NGƯỜI BẠN CHUYỂN TRỌ" }),
 									/* @__PURE__ */ jsxs("h2", { children: [
-										"Hỏi một chút.",
+										"Kể mình nghe.",
 										/* @__PURE__ */ jsx("br", {}),
-										"Nhẹ cả hành trình."
+										"Cùng tìm cách nhé."
 									] }),
-									/* @__PURE__ */ jsx("p", { children: "Chọn điều bạn cần. Bơ giúp bạn tìm đúng nơi để bắt đầu." })
+									/* @__PURE__ */ jsx("p", { children: "Bạn có thể viết tự nhiên, hỏi tiếp hoặc thay đổi nhu cầu trong cuộc trò chuyện." })
 								]
 							}),
 							/* @__PURE__ */ jsxs("button", {
@@ -3126,50 +3373,31 @@ function AssistantPage({ config: c, onQuote }) {
 							}),
 							/* @__PURE__ */ jsx("span", {
 								className: "bo-sidebar-label",
-								children: "BƠ CÓ THỂ GIÚP BẠN"
+								children: "BẠN ĐANG CẦN GÌ?"
 							}),
 							/* @__PURE__ */ jsx("nav", {
-								"aria-label": "Chủ đề tư vấn",
-								children: [
-									"services",
-									"quote",
-									"booking",
-									"surplus",
-									"boxes",
-									"tracking",
-									"guide",
-									"support"
-								].map((id) => {
-									const t = guideTopics.find((t) => t.id === id);
-									return /* @__PURE__ */ jsxs("button", {
-										type: "button",
-										onClick: () => showTopic(t),
-										children: [/* @__PURE__ */ jsx("span", { children: t.title }), /* @__PURE__ */ jsx(ArrowUpRight, { size: 15 })]
-									}, id);
-								})
+								"aria-label": "Nhu cầu tư vấn",
+								children: conversationStarters.map((starter) => /* @__PURE__ */ jsxs("button", {
+									type: "button",
+									disabled: busy,
+									onClick: () => send(starter.prompt),
+									children: [/* @__PURE__ */ jsx("span", { children: starter.title }), /* @__PURE__ */ jsx(ArrowRight, { size: 15 })]
+								}, starter.id))
 							}),
 							/* @__PURE__ */ jsxs("details", {
 								className: "bo-all-topics",
-								children: [/* @__PURE__ */ jsxs("summary", { children: ["Tất cả chức năng website ", /* @__PURE__ */ jsx(ChevronDown, { size: 15 })] }), guideTopics.filter((t) => ![
-									"services",
-									"quote",
-									"booking",
-									"surplus",
-									"boxes",
-									"tracking",
-									"guide",
-									"support"
-								].includes(t.id)).map((t) => /* @__PURE__ */ jsxs("button", {
+								children: [/* @__PURE__ */ jsxs("summary", { children: ["Toàn bộ cẩm nang ", /* @__PURE__ */ jsx(ChevronDown, { size: 15 })] }), guideTopics.map((topic) => /* @__PURE__ */ jsxs("button", {
 									type: "button",
-									onClick: () => showTopic(t),
-									children: [t.title, /* @__PURE__ */ jsx(ArrowUpRight, { size: 14 })]
-								}, t.id))]
+									onClick: () => showTopic(topic),
+									disabled: busy,
+									children: [topic.title, /* @__PURE__ */ jsx(ArrowUpRight, { size: 14 })]
+								}, topic.id))]
 							}),
 							/* @__PURE__ */ jsxs("div", {
 								className: "bo-human-card",
 								children: [
 									/* @__PURE__ */ jsxs("span", { children: [/* @__PURE__ */ jsx(ShieldCheck, { size: 18 }), " Cần người hỗ trợ?"] }),
-									/* @__PURE__ */ jsx("p", { children: "Đội BOXANH sẽ xác nhận phạm vi, giá và lịch cùng bạn." }),
+									/* @__PURE__ */ jsx("p", { children: "Đội BOXANH xác nhận giá, lịch và xử lý các tình huống cần đối chiếu." }),
 									/* @__PURE__ */ jsxs("a", {
 										href: "tel:" + c.phone,
 										children: [
@@ -3190,10 +3418,10 @@ function AssistantPage({ config: c, onQuote }) {
 							className: "bo-conversation-status",
 							children: [/* @__PURE__ */ jsxs("span", {
 								className: status.ready ? "bo-status-ready" : "bo-status-guide",
-								children: [/* @__PURE__ */ jsx("i", {}), status.loading ? "Đang kiểm tra kết nối" : status.ready ? "AI sẵn sàng hỗ trợ" : "Cẩm nang BOXANH sẵn sàng"]
+								children: [/* @__PURE__ */ jsx("i", {}), status.loading ? "Đang kiểm tra kết nối" : status.ready ? "AI sẵn sàng hỗ trợ" : "Đang dùng cẩm nang · AI chưa bật"]
 							}), /* @__PURE__ */ jsx("span", {
 								className: "bo-status-area",
-								children: "Vinh, Nghệ An"
+								children: c.area
 							})]
 						}),
 						/* @__PURE__ */ jsx("div", {
@@ -3204,45 +3432,51 @@ function AssistantPage({ config: c, onQuote }) {
 								stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
 							},
 							children: !messages.length ? /* @__PURE__ */ jsxs("div", {
-								className: "bo-welcome",
+								className: "bo-welcome bo-welcome-v12",
 								children: [
 									/* @__PURE__ */ jsxs("div", {
-										className: "bo-welcome-robot",
-										children: [/* @__PURE__ */ jsx(BoRobot, {}), /* @__PURE__ */ jsx("span", {
-											className: "bo-hello",
-											children: "Xin chào!"
-										})]
+										className: "bo-opening-head",
+										children: [/* @__PURE__ */ jsx(BoRobot, {}), /* @__PURE__ */ jsxs("div", { children: [/* @__PURE__ */ jsx("p", {
+											className: "bo-kicker",
+											children: "MÌNH LÀ BƠ, TRỢ LÝ BOXANH"
+										}), /* @__PURE__ */ jsxs("h1", { children: [
+											"Hôm nay, bạn cần",
+											/* @__PURE__ */ jsx("br", {}),
+											/* @__PURE__ */ jsx("em", { children: "mình giúp gì?" })
+										] })] })]
+									}),
+									/* @__PURE__ */ jsx("div", {
+										className: "bo-opening-message",
+										"aria-label": "Lời chào và câu hỏi của Bơ",
+										children: /* @__PURE__ */ jsx(SafeText, { text: openingGreeting(c.area) })
 									}),
 									/* @__PURE__ */ jsx("p", {
-										className: "bo-kicker",
-										children: "MÌNH LÀ BƠ, TRỢ LÝ BOXANH"
-									}),
-									/* @__PURE__ */ jsxs("h1", { children: [
-										"Bạn cần gì,",
-										/* @__PURE__ */ jsx("br", {}),
-										/* @__PURE__ */ jsx("em", { children: "cứ hỏi Bơ." })
-									] }),
-									/* @__PURE__ */ jsxs("p", {
-										className: "bo-welcome-description",
-										children: [
-											"Từ chọn một gói chuyển trọ đến tìm chủ mới cho đồ cũ.",
-											/* @__PURE__ */ jsx("br", {}),
-											"Mình ở đây để giúp bạn bắt đầu dễ hơn."
-										]
+										className: "bo-start-label",
+										children: "CHỌN MỘT ĐIỀU BẠN CẦN, HOẶC NHẮN MÌNH BÊN DƯỚI"
 									}),
 									/* @__PURE__ */ jsx("div", {
 										className: "bo-prompt-grid",
-										children: welcomePrompts.map(([title, prompt, Icon]) => /* @__PURE__ */ jsxs("button", {
+										children: conversationStarters.map((starter) => {
+											const Icon = starterIcons[starter.id];
+											return /* @__PURE__ */ jsxs("button", {
+												type: "button",
+												onClick: () => send(starter.prompt),
+												disabled: status.loading,
+												children: [
+													/* @__PURE__ */ jsx(Icon, { size: 19 }),
+													/* @__PURE__ */ jsx("strong", { children: starter.title }),
+													/* @__PURE__ */ jsx(ArrowRight, { size: 15 })
+												]
+											}, starter.id);
+										})
+									}),
+									/* @__PURE__ */ jsxs("details", {
+										className: "bo-capabilities",
+										children: [/* @__PURE__ */ jsxs("summary", { children: ["Khám phá mọi chức năng BOXANH ", /* @__PURE__ */ jsx(ChevronDown, { size: 16 })] }), /* @__PURE__ */ jsx("div", { children: guideTopics.map((topic) => /* @__PURE__ */ jsxs("button", {
 											type: "button",
-											onClick: () => title === "Lên kế hoạch chuyển" ? setPlannerOpen(true) : send(prompt),
-											disabled: status.loading,
-											children: [
-												/* @__PURE__ */ jsx(Icon, { size: 21 }),
-												/* @__PURE__ */ jsx("strong", { children: title }),
-												/* @__PURE__ */ jsx("span", { children: prompt }),
-												/* @__PURE__ */ jsx(ArrowUpRight, { size: 17 })
-											]
-										}, title))
+											onClick: () => showTopic(topic),
+											children: [topic.title, /* @__PURE__ */ jsx(ArrowUpRight, { size: 14 })]
+										}, topic.id)) })]
 									})
 								]
 							}) : /* @__PURE__ */ jsxs("div", {
@@ -3250,14 +3484,34 @@ function AssistantPage({ config: c, onQuote }) {
 								role: "log",
 								"aria-label": "Lịch sử hội thoại",
 								"aria-relevant": "additions",
-								children: [/* @__PURE__ */ jsx("p", {
-									className: "bo-session-label",
-									children: "CUỘC TRÒ CHUYỆN CỦA BẠN"
-								}), messages.map((message) => /* @__PURE__ */ jsx(Message, {
-									message,
-									onQuote,
-									config: c
-								}, message.id))]
+								children: [
+									/* @__PURE__ */ jsx("p", {
+										className: "bo-session-label",
+										children: "CÙNG BƠ TÌM CÁCH PHÙ HỢP"
+									}),
+									messages.map((message) => /* @__PURE__ */ jsx(Message, {
+										message,
+										onQuote,
+										config: c
+									}, message.id)),
+									messages.at(-1)?.error && /* @__PURE__ */ jsxs("button", {
+										type: "button",
+										className: "bo-retry",
+										onClick: retry,
+										disabled: busy,
+										children: [/* @__PURE__ */ jsx(ArrowRight, { size: 15 }), " Thử lại câu hỏi"]
+									}),
+									!!prompts.length && /* @__PURE__ */ jsxs("div", {
+										className: "bo-followups",
+										"aria-label": "Gợi ý tiếp tục cuộc trò chuyện",
+										children: [/* @__PURE__ */ jsx("span", { children: "BẠN MUỐN TÌM HIỂU TIẾP?" }), prompts.map((prompt) => /* @__PURE__ */ jsxs("button", {
+											type: "button",
+											disabled: busy,
+											onClick: () => send(prompt),
+											children: [prompt, /* @__PURE__ */ jsx(ArrowRight, { size: 14 })]
+										}, prompt))]
+									})
+								]
 							})
 						}),
 						/* @__PURE__ */ jsxs("div", {
@@ -3268,8 +3522,8 @@ function AssistantPage({ config: c, onQuote }) {
 									children: [/* @__PURE__ */ jsx(BookOpen, { size: 16 }), /* @__PURE__ */ jsxs("p", { children: [
 										/* @__PURE__ */ jsx("strong", { children: "AI hội thoại đang chờ kích hoạt." }),
 										" ",
-										status.offline ? "Máy chủ hiện chưa kết nối. " : "",
-										"Bạn vẫn có thể hỏi cẩm nang, mở chức năng và chuẩn bị đặt lịch."
+										status.offline ? "Chưa kết nối được máy chủ. " : "",
+										"Bơ hiện hướng dẫn từ cẩm nang, chưa thể trò chuyện tự do như ChatGPT."
 									] })]
 								}),
 								status.ready && /* @__PURE__ */ jsxs("label", {
@@ -3302,7 +3556,7 @@ function AssistantPage({ config: c, onQuote }) {
 										/* @__PURE__ */ jsx("textarea", {
 											ref: inputRef,
 											id: "bo-chat-input",
-											placeholder: "Hỏi Bơ về dịch vụ, chi phí hoặc cách đặt lịch…",
+											placeholder: "Kể Bơ nghe tình huống của bạn, hoặc hỏi tiếp điều vừa trao đổi…",
 											value: input,
 											maxLength: 1800,
 											rows: 2,
@@ -3342,7 +3596,7 @@ function AssistantPage({ config: c, onQuote }) {
 											onClick: () => setPlannerOpen(true),
 											children: [/* @__PURE__ */ jsx(CalendarDays, { size: 13 }), " Chuẩn bị đặt lịch"]
 										}),
-										/* @__PURE__ */ jsx("span", { children: "Bơ hỗ trợ chuẩn bị. Giá & lịch do BOXANH xác nhận." }),
+										/* @__PURE__ */ jsx("span", { children: "Giá & lịch do BOXANH xác nhận." }),
 										/* @__PURE__ */ jsx("span", { children: input.length ? input.length + "/1.800" : "Enter để gửi · Shift + Enter xuống dòng" })
 									]
 								})

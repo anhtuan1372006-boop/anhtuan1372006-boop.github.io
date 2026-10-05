@@ -16175,22 +16175,22 @@ var Il = [
 		tags: "online lỗi kết nối thanh toán gps chatbot không hoạt động liên hệ",
 		text: "GitHub Pages phục vụ giao diện; đặt yêu cầu, tra cứu, danh mục thật và AI cần máy chủ dữ liệu đang chạy. Chưa có thanh toán trực tuyến, giỏ hàng, SMS/email/Zalo tự động, GPS, tài khoản khách hoặc lịch trống theo thời gian thực. Khi mất kết nối, thử lại hoặc gọi BOXANH; không coi lỗi là đã nhận đơn. AI chưa bật sẽ được ghi rõ; trả lời từ cẩm nang không phải câu trả lời do mô hình AI tạo."
 	}
-], Ll = {
+], Ll = (e) => Il.find((t) => t.id === e), Rl = {
 	small: "Gọn nhẹ",
 	full: "Trọn gói",
 	boxes: "Chỉ thuê hộp",
 	cleaning: "Dọn phòng",
 	handover: "Bàn giao phòng"
-}, Rl = (e) => new Intl.NumberFormat("vi-VN", {
+}, zl = (e) => new Intl.NumberFormat("vi-VN", {
 	style: "currency",
 	currency: "VND",
 	maximumFractionDigits: 0
 }).format(e || 0);
-function zl(e) {
+function Bl(e) {
 	return e.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/đ/g, "d");
 }
-function Bl(e) {
-	let t = zl(e), n = t.split(/[^a-z0-9]+/).filter((e) => e.length > 2 && ![
+function Vl(e) {
+	let t = Bl(e), n = t.split(/[^a-z0-9]+/).filter((e) => e.length > 2 && ![
 		"minh",
 		"ban",
 		"toi",
@@ -16215,79 +16215,308 @@ function Bl(e) {
 		["ky gui", "surplus"],
 		["thu mua", "surplus"],
 		["do hong", "surplus"],
+		["do thua", "surplus"],
+		["khong mang theo", "surplus"],
 		["tra cuu", "tracking"],
 		["dat lich", "booking"],
 		["tai anh", "photos"],
 		["bao gia", "quote"],
 		["chi phi", "quote"],
+		["gia bao nhieu", "quote"],
 		["huong dan", "guide"],
 		["mat do", "support"],
-		["su co", "support"]
-	].filter(([e]) => t.includes(e));
+		["su co", "support"],
+		["don phong", "cleaning"],
+		["ve sinh phong", "cleaning"],
+		["ban giao", "handover"],
+		["tra phong", "handover"],
+		["thue hop", "boxes"],
+		["thue thung", "boxes"],
+		["chuyen tro", "moving"],
+		["chuyen do", "moving"],
+		["gon nhe", "services"],
+		["tron goi", "services"],
+		["chon goi", "services"]
+	].filter(([e]) => t.includes(e)), i = new Set(r.map(([, e]) => e));
 	return Il.map((e) => {
-		let t = zl(e.title), i = new Set(zl(e.tags).split(/[^a-z0-9]+/)), a = zl(e.text);
+		let t = Bl(e.title), i = new Set(Bl(e.tags).split(/[^a-z0-9]+/)), a = Bl(e.text);
 		return {
 			topic: e,
 			score: n.reduce((e, n) => e + (t.split(/[^a-z0-9]+/).includes(n) ? 5 : i.has(n) ? 3 : +!!a.split(/[^a-z0-9]+/).includes(n)), 0) + r.filter(([, t]) => t === e.id).length * 30
 		};
-	}).filter((e) => e.score > 0).sort((e, t) => t.score - e.score).slice(0, 1).map((e) => e.topic);
+	}).filter((e) => e.score >= 5).sort((e, t) => t.score - e.score).slice(0, i.size > 1 ? Math.min(3, i.size) : 1).map((e) => e.topic);
 }
-function Vl(e, t) {
-	if (/^(xin chào|chào|hello|hi)[!. ]*$/i.test(e.trim())) return {
-		text: "Chào bạn, mình là Bơ. Cẩm nang BOXANH có thể giúp bạn chọn dịch vụ, tìm hướng dẫn và chuẩn bị yêu cầu. Bạn đang muốn chuyển trọ, dọn phòng hay xử lý đồ không mang theo?",
-		links: Il.filter((e) => [
+function Hl(e, t, n = []) {
+	let r = Bl(e.trim()), i = (e) => e.map(Ll).filter(Boolean);
+	if (/^(xin chao|chao|hello|hi|alo)[!. ]*$/.test(r)) return {
+		text: "Chào bạn! Mình có thể giúp bạn chọn dịch vụ, xem cách tính chi phí và chuẩn bị yêu cầu tại " + t.area + ". Bạn đang cần chuyển trọ, dọn phòng, bàn giao hay xử lý đồ thừa?",
+		links: i([
 			"services",
 			"booking",
 			"guide"
-		].includes(e.id))
+		])
 	};
-	let n = Bl(e);
-	if (!n.length) return {
-		text: "Mình chưa tìm thấy nội dung phù hợp trong cẩm nang. Bạn thử chọn một chủ đề bên dưới hoặc gọi " + t.phone + " để đội BOXANH tư vấn trực tiếp nhé.",
-		links: Il.filter((e) => [
+	if (/(chuc nang|lam duoc gi|giup.*nhung gi|tat ca.*website)/.test(r)) return {
+		text: "Bạn có thể bắt đầu từ những việc này:\n\n- Chọn và so sánh dịch vụ chuyển trọ.\n- Ước tính chi phí, xem phụ phí, chuẩn bị đặt lịch.\n- Đặt khảo sát dọn phòng hoặc bàn giao phòng.\n- Thuê hộp tái sử dụng.\n- Gửi đồ để thu mua, ký gửi hoặc phân loại.\n- Xem đồ cũ và đăng ký quan tâm khi có hàng thật.\n- Tra cứu yêu cầu và báo sự cố.\n- Xem video, danh sách chuẩn bị và chính sách.\n\nBạn muốn giải quyết việc nào trước? Mục “Khám phá mọi chức năng” có đầy đủ từng lối mở.",
+		links: i([
+			"services",
+			"quote",
+			"booking",
+			"cleaning",
+			"handover",
+			"boxes",
+			"goods",
+			"market",
+			"tracking",
+			"support",
+			"guide",
+			"policy"
+		])
+	};
+	let a = [...n].reverse().find((e) => e.role === "assistant" && e.links?.length)?.links[0], o = Vl(e);
+	if (a && /(cai do|goi do|viec do|the thi|nhu vay|con gia|bao nhieu|co duoc khong|tiep theo)/.test(r) && !/(don phong|ban giao|chuyen tro|thue hop|ky gui|thu mua|tra cuu)/.test(r) && (o = i([a.id])), /(lan dau|tu dong|it do|di mot minh|ngan sach|tiet kiem)/.test(r) && !/(don phong|ban giao|thu mua|ky gui)/.test(r) && (o = i(["services"])), o[0] && ["cleaning", "handover"].includes(o[0].id) && /(gia|chi phi|bao nhieu)/.test(r)) return {
+		text: (o[0].id === "cleaning" ? "Dọn phòng" : "Bàn giao phòng") + " hiện chưa có giá cố định. BOXANH cần xem diện tích, hiện trạng và phạm vi cần hỗ trợ rồi mới thống nhất chi phí.\n\nBạn có thể chuẩn bị mô tả và ảnh phòng, rồi mở “Chuẩn bị đặt lịch” để tạo nhu cầu khảo sát. Giá được xác nhận sau trao đổi, chưa có khoản thanh toán ở bước này.",
+		links: o
+	};
+	if (!o.length) return {
+		text: "Mình chưa chắc bạn đang cần hỗ trợ việc nào. Bạn có thể nói cụ thể hơn, chẳng hạn “chuyển ít đồ, muốn tiết kiệm” hoặc “cần dọn phòng trước khi trả trọ”.\n\nHiện mình đang trả lời từ cẩm nang, chưa có AI hội thoại để xử lý mọi tình huống. Nếu cần trao đổi trực tiếp, đội BOXANH ở số " + t.phone + ".",
+		links: i([
 			"services",
 			"booking",
 			"support"
-		].includes(e.id))
+		])
 	};
-	let r = n.map((e) => e.title + "\n" + e.text).join("\n\n");
-	return n.some((e) => [
-		"services",
-		"quote",
-		"fees"
-	].includes(e.id)) && (r += "\n\nGiá tham khảo hiện tại: Gọn nhẹ " + Rl(t.smallBase) + "; Trọn gói " + Rl(t.fullBase) + "; thuê 10 hộp " + Rl(t.boxBase + 10 * t.boxUnit) + ". Dọn/bàn giao cần khảo sát. Giá cuối cùng do BOXANH xác nhận."), {
-		text: r,
-		links: n
+	let s = {
+		services: "Nếu bạn tự đóng đồ và chủ yếu cần chuyển đi, hãy xem Gọn nhẹ. Nếu muốn được hỗ trợ đóng gói cùng vận chuyển, hãy xem Trọn gói. Khi đã có xe, bạn có thể chỉ thuê hộp.\n\nGiá gói tham khảo hiện tại: Gọn nhẹ từ " + zl(t.smallBase) + ", Trọn gói từ " + zl(t.fullBase) + ". Phụ phí và giá cuối cùng cần khảo sát.\n\nBạn muốn tự đóng đồ hay cần đội BOXANH hỗ trợ?",
+		moving: "Mình sẽ giúp bạn bắt đầu từ ba việc: chọn phạm vi hỗ trợ, ước tính theo đồ đạc/quãng đường, rồi gửi yêu cầu để BOXANH xác nhận. Hộp có thể được giao trước ngày chuyển 1–2 ngày và thu hồi sau khi bạn lấy đồ ra.\n\nBạn muốn tự đóng đồ hay cần hỗ trợ đóng gói?",
+		cleaning: "Dọn phòng cần xem hiện trạng và phạm vi công việc trước khi báo giá; hiện chưa có một mức giá áp dụng cho mọi phòng. Bạn gửi địa chỉ, diện tích, ngày mong muốn, mô tả và ảnh nếu có qua biểu mẫu khảo sát.\n\nBạn cần dọn phòng cũ trước khi trả trọ hay phòng mới trước khi vào ở?",
+		handover: "Trước khi bàn giao, nên kiểm tra ảnh hiện trạng, nội thất, chỉ số điện/nước, khoản cần đối soát và chìa khóa/lịch hẹn. BOXANH hỗ trợ ghi nhận, còn tiền cọc do bạn và chủ trọ đối soát theo thỏa thuận.\n\nBạn muốn mở danh sách kiểm tra hay chuẩn bị khảo sát bàn giao?",
+		surplus: "Đồ còn dùng được có thể gửi để thẩm định thu mua hoặc ký gửi. Thu mua chỉ được trừ phí sau thỏa thuận, tiếp nhận và phân bổ hợp lệ; ký gửi thanh toán sau khi bán được. Đồ hỏng cần xác nhận kênh thu gom phù hợp.\n\nBạn đang có đồ còn dùng được hay đồ đã hỏng?",
+		boxes: "Nếu đã có phương tiện, bạn có thể chỉ thuê hộp. Hộp được giao theo lịch thống nhất, kiểm đếm khi bàn giao và thu hồi, rồi vệ sinh để dùng tiếp. Thời gian thuê và gia hạn cần xem điều kiện trước khi nhận.\n\nBạn muốn xem điều kiện thuê hay chuẩn bị yêu cầu thuê hộp?",
+		quote: "Ước tính cần biết gói dịch vụ, số hộp, quãng đường, tầng ở hai nơi, thang máy và đồ cồng kềnh. Dọn phòng/bàn giao phải khảo sát hiện trạng. Bạn dùng nút “Chuẩn bị đặt lịch” để nhập nhu cầu và xem giá từ bộ tính thật.\n\nBạn cần ước tính chuyển trọ, thuê hộp hay khảo sát phòng?",
+		booking: "Đặt lịch chuyển đồ gồm bốn bước: chọn gói/đồ đạc → địa chỉ/ngày/điều kiện vận chuyển → đồ thừa → liên hệ và xem lại. Chọn “Chuẩn bị đặt lịch” để tạo bản nháp; khi kiểm tra xong bạn tự gửi yêu cầu trên biểu mẫu.\n\nGửi yêu cầu chưa có nghĩa là đã chốt lịch. BOXANH sẽ trao đổi và xác nhận riêng. Bạn cần chuyển trọ, thuê hộp, dọn phòng hay bàn giao?",
+		support: "Mình hiểu việc gặp vấn đề với đồ đạc khiến bạn lo lắng. Bạn hãy giữ ảnh, hộp/tem nếu có và mô tả cụ thể. Mở CSKH, nhập mã BX cùng số điện thoại đã đăng ký để gửi hồ sơ và nhận mã SC.\n\nĐội BOXANH sẽ đối chiếu; Bơ không tự kết luận trách nhiệm hay mức bồi thường. Nếu cần hỗ trợ trực tiếp, gọi " + t.phone + ".",
+		tracking: "Bạn mở Tra cứu, nhập mã yêu cầu và đúng số điện thoại đã đăng ký. Website hỗ trợ mã BX, DG, MH và SC. Tiến độ do nhân sự cập nhật, chưa có GPS trực tiếp.\n\nBạn không cần gửi mã hoặc số điện thoại trong cuộc trò chuyện; hãy nhập ở trang tra cứu."
+	};
+	return {
+		text: o.length === 1 ? s[o[0].id] || o[0].title + "\n\n" + o[0].text : o.map((e) => "**" + e.title + "**\n" + e.text).join("\n\n") + "\n\nBạn muốn mình hướng dẫn phần nào trước?",
+		links: o
 	};
 }
 //#endregion
+//#region public/assistant-conversation.js
+var Ul = [
+	{
+		id: "moving",
+		title: "Mình cần chuyển trọ",
+		prompt: "Mình muốn chuyển trọ. Bạn hỏi mình từng bước để chọn dịch vụ phù hợp nhé.",
+		topic: "moving"
+	},
+	{
+		id: "quote",
+		title: "Mình muốn biết chi phí",
+		prompt: "Giúp mình ước tính chi phí. Bạn cần những thông tin gì?",
+		topic: "quote"
+	},
+	{
+		id: "cleaning",
+		title: "Dọn phòng cũ hoặc mới",
+		prompt: "Mình cần dọn phòng. Bạn tư vấn phạm vi công việc và cách gửi khảo sát nhé.",
+		topic: "cleaning"
+	},
+	{
+		id: "handover",
+		title: "Chuẩn bị trả phòng",
+		prompt: "Mình sắp trả phòng. Cần kiểm tra những gì trước khi bàn giao?",
+		topic: "handover"
+	},
+	{
+		id: "surplus",
+		title: "Xử lý đồ không mang theo",
+		prompt: "Mình có đồ không muốn mang theo. Giúp mình chọn thu mua, ký gửi hoặc thu gom.",
+		topic: "surplus"
+	},
+	{
+		id: "boxes",
+		title: "Mình chỉ cần thuê hộp",
+		prompt: "Mình đã có xe, chỉ cần thuê hộp. Cách giao, sử dụng và thu hồi thế nào?",
+		topic: "boxes"
+	},
+	{
+		id: "booking",
+		title: "Chuẩn bị đặt lịch",
+		prompt: "Mình muốn chuẩn bị đặt lịch. Hãy hỏi thông tin còn thiếu, đừng hỏi lại những gì mình đã nói.",
+		topic: "booking"
+	},
+	{
+		id: "tracking",
+		title: "Tra cứu yêu cầu đã gửi",
+		prompt: "Mình đã gửi yêu cầu rồi. Làm sao xem tiến độ?",
+		topic: "tracking"
+	},
+	{
+		id: "support",
+		title: "Mình đang gặp sự cố",
+		prompt: "Mình gặp vấn đề với đồ đạc sau chuyển trọ. Bạn hướng dẫn mình cách báo sự cố nhé.",
+		topic: "support"
+	},
+	{
+		id: "guide",
+		title: "Khám phá toàn bộ website",
+		prompt: "Bạn có thể giúp mình những gì? Giới thiệu tất cả chức năng chính và cách bắt đầu.",
+		topic: "guide"
+	}
+];
+function Wl(e) {
+	return `Chào bạn, mình là Bơ, trợ lý của BOXANH tại ${e}. Hôm nay bạn đang cần chuyển trọ, dọn phòng, bàn giao phòng hay xử lý đồ không mang theo?\n\nBạn có thể kể tình huống của mình hoặc chọn một gợi ý bên dưới. Mình sẽ cùng bạn tìm cách bắt đầu phù hợp.`;
+}
+var Gl = {
+	moving: [
+		"Mình tự đóng đồ được, nên chọn gói nào?",
+		"Nếu muốn hỗ trợ từ đóng gói đến chuyển đồ thì sao?",
+		"Cần chuẩn bị những gì trước ngày chuyển?"
+	],
+	services: [
+		"So sánh Gọn nhẹ và Trọn gói cho mình.",
+		"Mình có xe rồi, thuê hộp thế nào?",
+		"Giúp mình chuẩn bị đặt lịch."
+	],
+	quote: [
+		"Những khoản phụ phí nào có thể phát sinh?",
+		"Mình muốn chuẩn bị bản nháp để xem chi phí.",
+		"Nếu có đồ cũ thì có được giảm phí không?"
+	],
+	fees: [
+		"Nếu có thang máy thì phí cầu thang tính thế nào?",
+		"Giá dự kiến có phải giá cuối cùng không?",
+		"Giúp mình chuẩn bị đặt lịch."
+	],
+	cleaning: [
+		"Dọn phòng cũ và phòng mới khác nhau thế nào?",
+		"Cần gửi ảnh và diện tích phòng thế nào?",
+		"Giúp mình chuẩn bị khảo sát dọn phòng."
+	],
+	handover: [
+		"Cho mình danh sách kiểm tra trước bàn giao.",
+		"BOXANH có quyết định tiền cọc không?",
+		"Giúp mình chuẩn bị khảo sát bàn giao."
+	],
+	boxes: [
+		"Khi nào giao và thu hồi hộp?",
+		"Giữ hộp lâu hơn có được không?",
+		"Mình muốn chuẩn bị yêu cầu thuê hộp."
+	],
+	surplus: [
+		"Thu mua và ký gửi khác nhau thế nào?",
+		"Đồ hỏng thì xử lý như thế nào?",
+		"Hướng dẫn gửi ảnh và hồ sơ đồ cũ."
+	],
+	goods: [
+		"Ký gửi có được trừ phí chuyển ngay không?",
+		"Mình muốn liên kết đồ cũ với đơn chuyển trọ.",
+		"Cần ảnh và thông tin nào để thẩm định?"
+	],
+	booking: [
+		"Chưa biết số hộp thì làm thế nào?",
+		"Cần nhập thông tin liên hệ ở đâu?",
+		"Gửi yêu cầu có nghĩa là đã chốt lịch chưa?"
+	],
+	survey: [
+		"Dọn phòng có giá cố định không?",
+		"Cần ảnh và diện tích phòng thế nào?",
+		"Sau khi gửi khảo sát thì bước tiếp theo là gì?"
+	],
+	tracking: [
+		"Mình quên mã yêu cầu thì làm thế nào?",
+		"Có xem vị trí xe theo GPS không?",
+		"Mình cần đội BOXANH hỗ trợ trực tiếp."
+	],
+	support: [
+		"Cần giữ những bằng chứng gì khi báo sự cố?",
+		"Hướng dẫn gửi hồ sơ sự cố.",
+		"Sau khi gửi, mình theo dõi phản hồi ở đâu?"
+	],
+	guide: [
+		"Chỉ cho mình cách đặt lịch.",
+		"Mở hướng dẫn chuẩn bị ngày chuyển.",
+		"Có những chức năng nào đang hoạt động?"
+	]
+};
+function Kl(e) {
+	let t = e.at(-1);
+	if (t?.pending || t?.error) return [];
+	let n = t?.actions?.find((e) => e.type === "suggestions")?.prompts;
+	if (n?.length) return n.slice(0, 3);
+	if (t?.actions?.some((e) => ["draft", "quote"].includes(e.type))) return [
+		"Giải thích giúp mình các khoản trong ước tính.",
+		"Nếu mình thay đổi số hộp thì sao?",
+		"Mình cần kiểm tra gì trước khi gửi yêu cầu?"
+	];
+	let r = [...e].reverse().find((e) => e.role === "user");
+	return Gl[t?.links?.[0]?.id || Vl(r?.text || "")[0]?.id] || [
+		"Giúp mình chọn dịch vụ phù hợp.",
+		"Mình muốn biết chi phí dự kiến.",
+		"Hướng dẫn mình bước tiếp theo."
+	];
+}
+function ql(e, t) {
+	let n = [], r = 0;
+	for (let i of [...e, t].filter((e) => !e.error && !e.pending && (e.text || e.actions?.length)).slice(-16).reverse()) {
+		let e = (i.text || "").slice(0, 2500), t = i.actions?.filter((e) => ["draft", "quote"].includes(e.type)).map((e) => ({
+			draft: e.draft,
+			quote: {
+				total: e.quote?.total,
+				needsSurvey: e.quote?.needsSurvey
+			},
+			assumptions: e.assumptions,
+			bookingCreated: !1
+		}));
+		if (t?.length && (e += "\nThông tin bản nháp đã hiển thị (cần công cụ kiểm tra lại): " + JSON.stringify(t)), e = e.slice(0, 4e3), r + e.length > 18e3) break;
+		r += e.length, n.unshift({
+			role: i.role,
+			content: e
+		});
+	}
+	return n;
+}
+function Jl(e) {
+	return e.split(/\n\n+/).map((e) => {
+		let t = e.split("\n");
+		return t.every((e) => /^\s*[-•]\s+/.test(e)) ? {
+			kind: "list",
+			ordered: !1,
+			lines: t.map((e) => e.replace(/^\s*[-•]\s+/, ""))
+		} : t.every((e) => /^\s*\d+[.)]\s+/.test(e)) ? {
+			kind: "list",
+			ordered: !0,
+			lines: t.map((e) => e.replace(/^\s*\d+[.)]\s+/, ""))
+		} : /^#{1,3} /.test(e) && t.length === 1 ? {
+			kind: "heading",
+			text: e.replace(/^#{1,3} /, "")
+		} : {
+			kind: "paragraph",
+			text: e
+		};
+	});
+}
+//#endregion
 //#region src/assistant.jsx
-var Hl = {
+var Yl = {
 	messages: [],
 	consent: !1
-}, Ul = [
-	[
-		"Chọn gói cùng Bơ",
-		"Mình chuyển trọ lần đầu, nên chọn gói nào?",
-		ke
-	],
-	[
-		"Lên kế hoạch chuyển",
-		"Mình muốn chuẩn bị đặt lịch chuyển trọ.",
-		ue
-	],
-	[
-		"Tìm chỗ cho đồ thừa",
-		"Thu mua và ký gửi đồ cũ khác nhau thế nào?",
-		ze
-	],
-	[
-		"Biết ngay cách dùng",
-		"Hướng dẫn mình các chức năng trên website.",
-		ce
-	]
-], Wl = () => crypto.randomUUID();
-function Gl({ mini: e = !1, paused: t = !1 }) {
+}, Xl = {
+	moving: ke,
+	quote: Ye,
+	cleaning: Ye,
+	handover: ge,
+	boxes: ke,
+	surplus: ze,
+	booking: ue,
+	tracking: ce,
+	support: qe,
+	guide: ce
+}, Zl = () => crypto.randomUUID();
+function Ql({ mini: e = !1, paused: t = !1 }) {
 	let n = E.useId().replaceAll(":", "");
 	return /* @__PURE__ */ (0, R.jsx)("span", {
 		className: "bo-robot " + (e ? "bo-mini " : "") + (t ? "bo-paused" : ""),
@@ -16519,7 +16748,7 @@ function Gl({ mini: e = !1, paused: t = !1 }) {
 		})
 	});
 }
-function Kl() {
+function $l() {
 	let [e, t] = (0, E.useState)(!1), [n, r] = (0, E.useState)(!0), i = (0, E.useRef)(null);
 	return (0, E.useEffect)(() => {
 		let e = new IntersectionObserver((e) => r(e[0].isIntersecting));
@@ -16535,7 +16764,7 @@ function Kl() {
 				className: "bo-invite-link",
 				"aria-label": "Gặp Bơ, mở trang trò chuyện với trợ lý BOXANH",
 				children: [
-					/* @__PURE__ */ (0, R.jsx)(Gl, {
+					/* @__PURE__ */ (0, R.jsx)(Ql, {
 						mini: !0,
 						paused: e || !n
 					}),
@@ -16562,13 +16791,16 @@ function Kl() {
 		})
 	});
 }
-function ql({ text: e }) {
+function eu({ text: e }) {
+	return e.split(/(\*\*[^*\n]+\*\*)/g).map((e, t) => e.startsWith("**") && e.endsWith("**") ? /* @__PURE__ */ (0, R.jsx)("strong", { children: e.slice(2, -2) }, t) : e);
+}
+function tu({ text: e }) {
 	return /* @__PURE__ */ (0, R.jsx)("div", {
 		className: "bo-message-text",
-		children: e.split(/\n\n+/).map((e, t) => /* @__PURE__ */ (0, R.jsx)("p", { children: e }, t))
+		children: Jl(e).map((e, t) => e.kind === "list" ? E.createElement(e.ordered ? "ol" : "ul", { key: t }, e.lines.map((e, t) => /* @__PURE__ */ (0, R.jsx)("li", { children: /* @__PURE__ */ (0, R.jsx)(eu, { text: e }) }, t))) : e.kind === "heading" ? /* @__PURE__ */ (0, R.jsx)("h3", { children: /* @__PURE__ */ (0, R.jsx)(eu, { text: e.text }) }, t) : /* @__PURE__ */ (0, R.jsx)("p", { children: /* @__PURE__ */ (0, R.jsx)(eu, { text: e.text }) }, t))
 	});
 }
-function Jl({ links: e }) {
+function nu({ links: e }) {
 	let t = new Set(Il.map((e) => e.href));
 	return /* @__PURE__ */ (0, R.jsx)("div", {
 		className: "bo-source-links",
@@ -16578,7 +16810,7 @@ function Jl({ links: e }) {
 		}, e.href))
 	});
 }
-function Yl({ open: e, onOpenChange: t, onPrepared: n, onQuote: r }) {
+function ru({ open: e, onOpenChange: t, onPrepared: n, onQuote: r }) {
 	let [i, a] = (0, E.useState)({
 		service: "small",
 		boxes: 10,
@@ -16638,7 +16870,7 @@ function Yl({ open: e, onOpenChange: t, onPrepared: n, onQuote: r }) {
 							children: ["Dịch vụ", /* @__PURE__ */ (0, R.jsx)("select", {
 								value: i.service,
 								onChange: (e) => p("service", e.target.value),
-								children: Object.entries(Ll).map(([e, t]) => /* @__PURE__ */ (0, R.jsx)("option", {
+								children: Object.entries(Rl).map(([e, t]) => /* @__PURE__ */ (0, R.jsx)("option", {
 									value: e,
 									children: t
 								}, e))
@@ -16729,7 +16961,7 @@ function Yl({ open: e, onOpenChange: t, onPrepared: n, onQuote: r }) {
 		})] })
 	});
 }
-function Xl({ action: e, onQuote: t, config: n }) {
+function iu({ action: e, onQuote: t, config: n }) {
 	return /* @__PURE__ */ (0, R.jsxs)("section", {
 		className: "bo-draft-card",
 		children: [
@@ -16741,16 +16973,16 @@ function Xl({ action: e, onQuote: t, config: n }) {
 					/* @__PURE__ */ (0, R.jsx)("span", { children: "Bản nháp" })
 				]
 			}),
-			/* @__PURE__ */ (0, R.jsx)("h3", { children: Ll[e.draft.service] }),
+			/* @__PURE__ */ (0, R.jsx)("h3", { children: Rl[e.draft.service] }),
 			/* @__PURE__ */ (0, R.jsxs)("div", {
 				className: "bo-draft-data",
 				children: [!e.quote.needsSurvey && /* @__PURE__ */ (0, R.jsxs)(R.Fragment, { children: [/* @__PURE__ */ (0, R.jsxs)("span", { children: [e.draft.boxes ?? 10, " hộp"] }), e.draft.service !== "boxes" && /* @__PURE__ */ (0, R.jsxs)("span", { children: [e.draft.distance ?? 5, " km"] })] }), e.draft.date && /* @__PURE__ */ (0, R.jsx)("span", { children: (/* @__PURE__ */ new Date(e.draft.date + "T12:00:00")).toLocaleDateString("vi-VN") })]
 			}),
 			/* @__PURE__ */ (0, R.jsxs)("strong", {
 				className: "bo-draft-price",
-				children: [e.quote.needsSurvey ? "Báo giá sau khảo sát" : Rl(e.quote.total), /* @__PURE__ */ (0, R.jsx)("small", { children: e.quote.needsSurvey ? "Cần kiểm tra hiện trạng phòng" : "Dự kiến · chưa phải giá chốt" })]
+				children: [e.quote.needsSurvey ? "Báo giá sau khảo sát" : zl(e.quote.total), /* @__PURE__ */ (0, R.jsx)("small", { children: e.quote.needsSurvey ? "Cần kiểm tra hiện trạng phòng" : "Dự kiến · chưa phải giá chốt" })]
 			}),
-			e.quote.lines?.length > 0 && /* @__PURE__ */ (0, R.jsxs)("details", { children: [/* @__PURE__ */ (0, R.jsxs)("summary", { children: ["Xem cách tính ", /* @__PURE__ */ (0, R.jsx)(ve, { size: 15 })] }), e.quote.lines.map((e) => /* @__PURE__ */ (0, R.jsxs)("p", { children: [/* @__PURE__ */ (0, R.jsx)("span", { children: e.label }), /* @__PURE__ */ (0, R.jsx)("b", { children: Rl(e.amount) })] }, e.label))] }),
+			e.quote.lines?.length > 0 && /* @__PURE__ */ (0, R.jsxs)("details", { children: [/* @__PURE__ */ (0, R.jsxs)("summary", { children: ["Xem cách tính ", /* @__PURE__ */ (0, R.jsx)(ve, { size: 15 })] }), e.quote.lines.map((e) => /* @__PURE__ */ (0, R.jsxs)("p", { children: [/* @__PURE__ */ (0, R.jsx)("span", { children: e.label }), /* @__PURE__ */ (0, R.jsx)("b", { children: zl(e.amount) })] }, e.label))] }),
 			e.assumptions?.length > 0 && /* @__PURE__ */ (0, R.jsxs)("p", {
 				className: "bo-assumptions",
 				children: [
@@ -16775,7 +17007,7 @@ function Xl({ action: e, onQuote: t, config: n }) {
 		]
 	});
 }
-function Zl({ message: e, onQuote: t, config: n }) {
+function G({ message: e, onQuote: t, config: n }) {
 	let [r, i] = (0, E.useState)(!1);
 	async function a() {
 		try {
@@ -16791,7 +17023,7 @@ function Zl({ message: e, onQuote: t, config: n }) {
 			e.role === "assistant" && /* @__PURE__ */ (0, R.jsxs)("div", {
 				className: "bo-message-identity",
 				children: [
-					/* @__PURE__ */ (0, R.jsx)(Gl, {
+					/* @__PURE__ */ (0, R.jsx)(Ql, {
 						mini: !0,
 						paused: !0
 					}),
@@ -16802,7 +17034,7 @@ function Zl({ message: e, onQuote: t, config: n }) {
 			/* @__PURE__ */ (0, R.jsxs)("div", {
 				className: "bo-bubble",
 				children: [
-					/* @__PURE__ */ (0, R.jsx)(ql, { text: e.text }),
+					/* @__PURE__ */ (0, R.jsx)(tu, { text: e.text }),
 					e.pending && /* @__PURE__ */ (0, R.jsxs)("span", {
 						className: "bo-typing",
 						"aria-label": "Bơ đang trả lời",
@@ -16817,14 +17049,14 @@ function Zl({ message: e, onQuote: t, config: n }) {
 						role: "alert",
 						children: e.error
 					}),
-					e.links && /* @__PURE__ */ (0, R.jsx)(Jl, { links: e.links }),
+					e.links && /* @__PURE__ */ (0, R.jsx)(nu, { links: e.links }),
 					/* @__PURE__ */ (0, R.jsxs)("div", {
 						className: "bo-action-stack",
-						children: [e.actions?.filter((e) => ["draft", "quote"].includes(e.type)).map((e, r) => /* @__PURE__ */ (0, R.jsx)(Xl, {
+						children: [e.actions?.filter((e) => ["draft", "quote"].includes(e.type)).map((e, r) => /* @__PURE__ */ (0, R.jsx)(iu, {
 							action: e,
 							onQuote: t,
 							config: n
-						}, r)), e.actions?.filter((e) => e.type === "links").map((e, t) => /* @__PURE__ */ (0, R.jsx)(Jl, { links: e.links || [] }, "l" + t))]
+						}, r)), e.actions?.filter((e) => e.type === "links").map((e, t) => /* @__PURE__ */ (0, R.jsx)(nu, { links: e.links || [] }, "l" + t))]
 					})
 				]
 			}),
@@ -16841,11 +17073,15 @@ function Zl({ message: e, onQuote: t, config: n }) {
 		]
 	});
 }
-function Ql({ config: e, onQuote: t }) {
-	let [n, r] = (0, E.useState)(() => Hl.messages), [i, a] = (0, E.useState)(""), [o, s] = (0, E.useState)({
+function au({ config: e, onQuote: t }) {
+	let [n, r] = (0, E.useState)(() => Yl.messages.map((e) => e.pending ? {
+		...e,
+		pending: !1,
+		error: "Câu trả lời trước đã dừng khi bạn rời trang."
+	} : e)), [i, a] = (0, E.useState)(""), [o, s] = (0, E.useState)({
 		ready: !1,
 		loading: !0
-	}), [c, l] = (0, E.useState)(Hl.consent), [u, d] = (0, E.useState)(!1), [f, p] = (0, E.useState)(!1), [m, h] = (0, E.useState)(""), [g, _] = (0, E.useState)(!1), [v, y] = (0, E.useState)(!1), b = (0, E.useRef)(null), x = (0, E.useRef)(null), S = (0, E.useRef)(null), C = (0, E.useRef)(!0);
+	}), [c, l] = (0, E.useState)(Yl.consent), [u, d] = (0, E.useState)(!1), [f, p] = (0, E.useState)(!1), [m, h] = (0, E.useState)(""), [g, _] = (0, E.useState)(!1), [v, y] = (0, E.useState)(!1), b = (0, E.useRef)(null), x = (0, E.useRef)(null), S = (0, E.useRef)(null), C = (0, E.useRef)(!0);
 	(0, E.useEffect)(() => {
 		let e = new AbortController();
 		return fetch("/api/assistant/status", { signal: AbortSignal.any([e.signal, AbortSignal.timeout(5e3)]) }).then((e) => {
@@ -16854,7 +17090,7 @@ function Ql({ config: e, onQuote: t }) {
 		}).then((e) => s({
 			...e,
 			loading: !1
-		})).catch((t) => {
+		})).catch(() => {
 			e.signal.aborted || s({
 				ready: !1,
 				loading: !1,
@@ -16864,7 +17100,7 @@ function Ql({ config: e, onQuote: t }) {
 			e.abort(), x.current?.abort();
 		};
 	}, []), (0, E.useEffect)(() => {
-		Hl.messages = n, C.current && b.current && (b.current.scrollTop = n.length ? b.current.scrollHeight : 0);
+		Yl.messages = n, C.current && b.current && (b.current.scrollTop = n.length ? b.current.scrollHeight : 0);
 	}, [n, u]);
 	function w(e, t) {
 		r((n) => n.map((n) => n.id === e ? {
@@ -16874,41 +17110,41 @@ function Ql({ config: e, onQuote: t }) {
 	}
 	function T(e) {
 		C.current = !0, p(!1), r((t) => [...t, {
-			id: Wl(),
+			id: Zl(),
 			role: "assistant",
 			mode: "guide",
-			text: e.title + "\n" + e.text,
+			text: e.title + "\n\n" + e.text,
 			links: [e]
 		}]);
 	}
-	async function ee(t) {
-		let i = t.trim();
-		if (u || !i) return;
-		if (i.length > 1800) {
+	async function ee(t, i = n) {
+		let s = t.trim();
+		if (u || !s) return;
+		if (s.length > 1800) {
 			h("Mỗi tin nhắn tối đa 1.800 ký tự.");
 			return;
 		}
 		if (o.loading) {
-			h("Đang kiểm tra kết nối, bạn thử lại sau một chút nhé.");
+			a(s), h("Bơ đang kiểm tra kết nối. Câu hỏi của bạn vẫn ở đây.");
 			return;
 		}
 		if (o.ready && !c) {
-			h("Đánh dấu đồng ý gửi nội dung đến AI trước khi trò chuyện.");
+			a(s), h("Vui lòng đồng ý gửi nội dung đến AI trước khi trò chuyện. Câu hỏi của bạn đã được giữ lại."), S.current?.focus();
 			return;
 		}
 		h(""), a(""), p(!1), C.current = !0;
-		let s = {
-			id: Wl(),
+		let l = {
+			id: Zl(),
 			role: "user",
-			text: i
-		}, l = Wl();
+			text: s
+		}, f = Zl();
 		if (!o.ready) {
-			let t = Vl(i, e);
-			r((e) => [
-				...e,
-				s,
+			let t = Hl(s, e, i);
+			r([
+				...i,
+				l,
 				{
-					id: l,
+					id: f,
 					role: "assistant",
 					mode: "guide",
 					text: t.text,
@@ -16917,11 +17153,11 @@ function Ql({ config: e, onQuote: t }) {
 			]);
 			return;
 		}
-		r((e) => [
-			...e,
-			s,
+		r([
+			...i,
+			l,
 			{
-				id: l,
+				id: f,
 				role: "assistant",
 				mode: "ai",
 				text: "",
@@ -16929,61 +17165,52 @@ function Ql({ config: e, onQuote: t }) {
 				actions: []
 			}
 		]), d(!0);
-		let f = new AbortController();
-		x.current = f;
+		let m = new AbortController();
+		x.current = m;
 		try {
-			let e = [], t = 0;
-			for (let r of [...n.filter((e) => e.text && !e.error && e.mode !== "guide"), s].slice(-12).reverse()) {
-				let n = r.text.slice(0, 3e3);
-				if (t + n.length > 16e3) break;
-				t += n.length, e.unshift({
-					role: r.role,
-					content: n
-				});
-			}
-			let r = await fetch("/api/assistant/chat", {
+			let e = await fetch("/api/assistant/chat", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					messages: e,
+					messages: ql(i, l),
 					consent: !0
 				}),
-				signal: f.signal
+				signal: m.signal
 			});
-			if (!r.ok) {
-				let e = await r.json();
-				throw Error(e.error || "Chưa kết nối được Bơ.");
+			if (!e.ok) {
+				let t = await e.json();
+				throw Error(t.error || "Chưa kết nối được Bơ.");
 			}
-			if (!r.body) throw Error("Chưa nhận được câu trả lời.");
-			let i = r.body.getReader(), a = new TextDecoder(), o = "", c = !1;
+			if (!e.body) throw Error("Chưa nhận được câu trả lời.");
+			let t = e.body.getReader(), n = new TextDecoder(), r = "", a = !1;
 			try {
 				for (;;) {
-					let { value: e, done: t } = await i.read();
-					if (t) break;
-					o += a.decode(e, { stream: !0 });
-					let n;
-					for (; (n = o.indexOf("\n\n")) >= 0;) {
-						let e = o.slice(0, n);
-						o = o.slice(n + 2);
-						let t = e.split("\n").find((e) => e.startsWith("data:"));
+					let { value: e, done: i } = await t.read();
+					if (i) break;
+					r = (r + n.decode(e, { stream: !0 })).replace(/\r\n/g, "\n");
+					let o;
+					for (; (o = r.indexOf("\n\n")) >= 0;) {
+						let e = r.slice(0, o);
+						r = r.slice(o + 2);
+						let t = e.split("\n").filter((e) => e.startsWith("data:")).map((e) => e.slice(5).trimStart()).join("\n");
 						if (!t) continue;
-						let r = JSON.parse(t.slice(5));
-						if (r.type === "delta") w(l, (e) => ({ text: e.text + r.text }));
-						else if (r.type === "action") w(l, (e) => ({ actions: [...e.actions, r.action] }));
-						else if (r.type === "done") c = !0, w(l, {
-							text: r.text,
+						let n = JSON.parse(t);
+						if (n.type === "delta") w(f, (e) => ({ text: e.text + n.text }));
+						else if (n.type === "action") w(f, (e) => ({ actions: [...e.actions, n.action] }));
+						else if (n.type === "done") a = !0, w(f, {
+							text: n.text,
 							pending: !1,
-							actions: r.actions
+							actions: n.actions
 						});
-						else if (r.type === "error") throw Error(r.message);
+						else if (n.type === "error") throw Error(n.message);
 					}
 				}
 			} finally {
-				i.releaseLock();
+				t.releaseLock();
 			}
-			if (!c) throw Error("Câu trả lời bị gián đoạn. Bạn có thể gửi lại câu hỏi.");
+			if (!a) throw Error("Câu trả lời bị gián đoạn. Bạn có thể thử lại.");
 		} catch (e) {
-			w(l, {
+			w(f, {
 				pending: !1,
 				error: e.name === "AbortError" ? "Đã dừng câu trả lời." : e.message
 			});
@@ -16991,18 +17218,23 @@ function Ql({ config: e, onQuote: t }) {
 			d(!1), x.current = null;
 		}
 	}
-	function te(e) {
+	function te() {
+		let e = n.findLastIndex((e) => e.role === "user");
+		e >= 0 && ee(n[e].text, n.slice(0, e));
+	}
+	function ne(e) {
 		C.current = !0, p(!1), r((t) => [...t, {
-			id: Wl(),
+			id: Zl(),
 			role: "assistant",
 			mode: "guide",
-			text: "Đây là bản nháp nhu cầu của bạn. Kiểm tra thông tin bên dưới rồi tiếp tục trên biểu mẫu đặt lịch.",
+			text: "Mình đã chuẩn bị bản nháp bên dưới. Bạn kiểm tra thông tin và chi phí, rồi tiếp tục trên biểu mẫu khi sẵn sàng.",
 			actions: [e]
 		}]);
 	}
-	function ne() {
-		x.current?.abort(), r([]), Hl.messages = [], a(""), h(""), _(!1), C.current = !0;
+	function re() {
+		x.current?.abort(), r([]), Yl.messages = [], a(""), h(""), _(!1), C.current = !0;
 	}
+	let D = n.length ? Kl(n) : [];
 	return /* @__PURE__ */ (0, R.jsxs)("div", {
 		className: "bo-chat-page",
 		"data-assistant-page": !0,
@@ -17056,17 +17288,17 @@ function Ql({ config: e, onQuote: t }) {
 								children: [
 									/* @__PURE__ */ (0, R.jsx)("span", { children: "NGƯỜI BẠN CHUYỂN TRỌ" }),
 									/* @__PURE__ */ (0, R.jsxs)("h2", { children: [
-										"Hỏi một chút.",
+										"Kể mình nghe.",
 										/* @__PURE__ */ (0, R.jsx)("br", {}),
-										"Nhẹ cả hành trình."
+										"Cùng tìm cách nhé."
 									] }),
-									/* @__PURE__ */ (0, R.jsx)("p", { children: "Chọn điều bạn cần. Bơ giúp bạn tìm đúng nơi để bắt đầu." })
+									/* @__PURE__ */ (0, R.jsx)("p", { children: "Bạn có thể viết tự nhiên, hỏi tiếp hoặc thay đổi nhu cầu trong cuộc trò chuyện." })
 								]
 							}),
 							/* @__PURE__ */ (0, R.jsxs)("button", {
 								type: "button",
 								className: "bo-new-chat",
-								onClick: () => n.length ? _(!0) : ne(),
+								onClick: () => n.length ? _(!0) : re(),
 								disabled: u,
 								children: [/* @__PURE__ */ (0, R.jsx)(Le, { size: 17 }), " Cuộc trò chuyện mới"]
 							}),
@@ -17084,42 +17316,23 @@ function Ql({ config: e, onQuote: t }) {
 							}),
 							/* @__PURE__ */ (0, R.jsx)("span", {
 								className: "bo-sidebar-label",
-								children: "BƠ CÓ THỂ GIÚP BẠN"
+								children: "BẠN ĐANG CẦN GÌ?"
 							}),
 							/* @__PURE__ */ (0, R.jsx)("nav", {
-								"aria-label": "Chủ đề tư vấn",
-								children: [
-									"services",
-									"quote",
-									"booking",
-									"surplus",
-									"boxes",
-									"tracking",
-									"guide",
-									"support"
-								].map((e) => {
-									let t = Il.find((t) => t.id === e);
-									return /* @__PURE__ */ (0, R.jsxs)("button", {
-										type: "button",
-										onClick: () => T(t),
-										children: [/* @__PURE__ */ (0, R.jsx)("span", { children: t.title }), /* @__PURE__ */ (0, R.jsx)(A, { size: 15 })]
-									}, e);
-								})
+								"aria-label": "Nhu cầu tư vấn",
+								children: Ul.map((e) => /* @__PURE__ */ (0, R.jsxs)("button", {
+									type: "button",
+									disabled: u,
+									onClick: () => ee(e.prompt),
+									children: [/* @__PURE__ */ (0, R.jsx)("span", { children: e.title }), /* @__PURE__ */ (0, R.jsx)(O, { size: 15 })]
+								}, e.id))
 							}),
 							/* @__PURE__ */ (0, R.jsxs)("details", {
 								className: "bo-all-topics",
-								children: [/* @__PURE__ */ (0, R.jsxs)("summary", { children: ["Tất cả chức năng website ", /* @__PURE__ */ (0, R.jsx)(ve, { size: 15 })] }), Il.filter((e) => ![
-									"services",
-									"quote",
-									"booking",
-									"surplus",
-									"boxes",
-									"tracking",
-									"guide",
-									"support"
-								].includes(e.id)).map((e) => /* @__PURE__ */ (0, R.jsxs)("button", {
+								children: [/* @__PURE__ */ (0, R.jsxs)("summary", { children: ["Toàn bộ cẩm nang ", /* @__PURE__ */ (0, R.jsx)(ve, { size: 15 })] }), Il.map((e) => /* @__PURE__ */ (0, R.jsxs)("button", {
 									type: "button",
 									onClick: () => T(e),
+									disabled: u,
 									children: [e.title, /* @__PURE__ */ (0, R.jsx)(A, { size: 14 })]
 								}, e.id))]
 							}),
@@ -17127,7 +17340,7 @@ function Ql({ config: e, onQuote: t }) {
 								className: "bo-human-card",
 								children: [
 									/* @__PURE__ */ (0, R.jsxs)("span", { children: [/* @__PURE__ */ (0, R.jsx)(qe, { size: 18 }), " Cần người hỗ trợ?"] }),
-									/* @__PURE__ */ (0, R.jsx)("p", { children: "Đội BOXANH sẽ xác nhận phạm vi, giá và lịch cùng bạn." }),
+									/* @__PURE__ */ (0, R.jsx)("p", { children: "Đội BOXANH xác nhận giá, lịch và xử lý các tình huống cần đối chiếu." }),
 									/* @__PURE__ */ (0, R.jsxs)("a", {
 										href: "tel:" + e.phone,
 										children: [
@@ -17148,10 +17361,10 @@ function Ql({ config: e, onQuote: t }) {
 							className: "bo-conversation-status",
 							children: [/* @__PURE__ */ (0, R.jsxs)("span", {
 								className: o.ready ? "bo-status-ready" : "bo-status-guide",
-								children: [/* @__PURE__ */ (0, R.jsx)("i", {}), o.loading ? "Đang kiểm tra kết nối" : o.ready ? "AI sẵn sàng hỗ trợ" : "Cẩm nang BOXANH sẵn sàng"]
+								children: [/* @__PURE__ */ (0, R.jsx)("i", {}), o.loading ? "Đang kiểm tra kết nối" : o.ready ? "AI sẵn sàng hỗ trợ" : "Đang dùng cẩm nang · AI chưa bật"]
 							}), /* @__PURE__ */ (0, R.jsx)("span", {
 								className: "bo-status-area",
-								children: "Vinh, Nghệ An"
+								children: e.area
 							})]
 						}),
 						/* @__PURE__ */ (0, R.jsx)("div", {
@@ -17166,54 +17379,80 @@ function Ql({ config: e, onQuote: t }) {
 								role: "log",
 								"aria-label": "Lịch sử hội thoại",
 								"aria-relevant": "additions",
-								children: [/* @__PURE__ */ (0, R.jsx)("p", {
-									className: "bo-session-label",
-									children: "CUỘC TRÒ CHUYỆN CỦA BẠN"
-								}), n.map((n) => /* @__PURE__ */ (0, R.jsx)(Zl, {
-									message: n,
-									onQuote: t,
-									config: e
-								}, n.id))]
+								children: [
+									/* @__PURE__ */ (0, R.jsx)("p", {
+										className: "bo-session-label",
+										children: "CÙNG BƠ TÌM CÁCH PHÙ HỢP"
+									}),
+									n.map((n) => /* @__PURE__ */ (0, R.jsx)(G, {
+										message: n,
+										onQuote: t,
+										config: e
+									}, n.id)),
+									n.at(-1)?.error && /* @__PURE__ */ (0, R.jsxs)("button", {
+										type: "button",
+										className: "bo-retry",
+										onClick: te,
+										disabled: u,
+										children: [/* @__PURE__ */ (0, R.jsx)(O, { size: 15 }), " Thử lại câu hỏi"]
+									}),
+									!!D.length && /* @__PURE__ */ (0, R.jsxs)("div", {
+										className: "bo-followups",
+										"aria-label": "Gợi ý tiếp tục cuộc trò chuyện",
+										children: [/* @__PURE__ */ (0, R.jsx)("span", { children: "BẠN MUỐN TÌM HIỂU TIẾP?" }), D.map((e) => /* @__PURE__ */ (0, R.jsxs)("button", {
+											type: "button",
+											disabled: u,
+											onClick: () => ee(e),
+											children: [e, /* @__PURE__ */ (0, R.jsx)(O, { size: 14 })]
+										}, e))]
+									})
+								]
 							}) : /* @__PURE__ */ (0, R.jsxs)("div", {
-								className: "bo-welcome",
+								className: "bo-welcome bo-welcome-v12",
 								children: [
 									/* @__PURE__ */ (0, R.jsxs)("div", {
-										className: "bo-welcome-robot",
-										children: [/* @__PURE__ */ (0, R.jsx)(Gl, {}), /* @__PURE__ */ (0, R.jsx)("span", {
-											className: "bo-hello",
-											children: "Xin chào!"
-										})]
+										className: "bo-opening-head",
+										children: [/* @__PURE__ */ (0, R.jsx)(Ql, {}), /* @__PURE__ */ (0, R.jsxs)("div", { children: [/* @__PURE__ */ (0, R.jsx)("p", {
+											className: "bo-kicker",
+											children: "MÌNH LÀ BƠ, TRỢ LÝ BOXANH"
+										}), /* @__PURE__ */ (0, R.jsxs)("h1", { children: [
+											"Hôm nay, bạn cần",
+											/* @__PURE__ */ (0, R.jsx)("br", {}),
+											/* @__PURE__ */ (0, R.jsx)("em", { children: "mình giúp gì?" })
+										] })] })]
+									}),
+									/* @__PURE__ */ (0, R.jsx)("div", {
+										className: "bo-opening-message",
+										"aria-label": "Lời chào và câu hỏi của Bơ",
+										children: /* @__PURE__ */ (0, R.jsx)(tu, { text: Wl(e.area) })
 									}),
 									/* @__PURE__ */ (0, R.jsx)("p", {
-										className: "bo-kicker",
-										children: "MÌNH LÀ BƠ, TRỢ LÝ BOXANH"
-									}),
-									/* @__PURE__ */ (0, R.jsxs)("h1", { children: [
-										"Bạn cần gì,",
-										/* @__PURE__ */ (0, R.jsx)("br", {}),
-										/* @__PURE__ */ (0, R.jsx)("em", { children: "cứ hỏi Bơ." })
-									] }),
-									/* @__PURE__ */ (0, R.jsxs)("p", {
-										className: "bo-welcome-description",
-										children: [
-											"Từ chọn một gói chuyển trọ đến tìm chủ mới cho đồ cũ.",
-											/* @__PURE__ */ (0, R.jsx)("br", {}),
-											"Mình ở đây để giúp bạn bắt đầu dễ hơn."
-										]
+										className: "bo-start-label",
+										children: "CHỌN MỘT ĐIỀU BẠN CẦN, HOẶC NHẮN MÌNH BÊN DƯỚI"
 									}),
 									/* @__PURE__ */ (0, R.jsx)("div", {
 										className: "bo-prompt-grid",
-										children: Ul.map(([e, t, n]) => /* @__PURE__ */ (0, R.jsxs)("button", {
+										children: Ul.map((e) => {
+											let t = Xl[e.id];
+											return /* @__PURE__ */ (0, R.jsxs)("button", {
+												type: "button",
+												onClick: () => ee(e.prompt),
+												disabled: o.loading,
+												children: [
+													/* @__PURE__ */ (0, R.jsx)(t, { size: 19 }),
+													/* @__PURE__ */ (0, R.jsx)("strong", { children: e.title }),
+													/* @__PURE__ */ (0, R.jsx)(O, { size: 15 })
+												]
+											}, e.id);
+										})
+									}),
+									/* @__PURE__ */ (0, R.jsxs)("details", {
+										className: "bo-capabilities",
+										children: [/* @__PURE__ */ (0, R.jsxs)("summary", { children: ["Khám phá mọi chức năng BOXANH ", /* @__PURE__ */ (0, R.jsx)(ve, { size: 16 })] }), /* @__PURE__ */ (0, R.jsx)("div", { children: Il.map((e) => /* @__PURE__ */ (0, R.jsxs)("button", {
 											type: "button",
-											onClick: () => e === "Lên kế hoạch chuyển" ? y(!0) : ee(t),
-											disabled: o.loading,
-											children: [
-												/* @__PURE__ */ (0, R.jsx)(n, { size: 21 }),
-												/* @__PURE__ */ (0, R.jsx)("strong", { children: e }),
-												/* @__PURE__ */ (0, R.jsx)("span", { children: t }),
-												/* @__PURE__ */ (0, R.jsx)(A, { size: 17 })
-											]
-										}, e))
+											onClick: () => T(e),
+											children: [e.title, /* @__PURE__ */ (0, R.jsx)(A, { size: 14 })]
+										}, e.id)) })]
 									})
 								]
 							})
@@ -17226,8 +17465,8 @@ function Ql({ config: e, onQuote: t }) {
 									children: [/* @__PURE__ */ (0, R.jsx)(ce, { size: 16 }), /* @__PURE__ */ (0, R.jsxs)("p", { children: [
 										/* @__PURE__ */ (0, R.jsx)("strong", { children: "AI hội thoại đang chờ kích hoạt." }),
 										" ",
-										o.offline ? "Máy chủ hiện chưa kết nối. " : "",
-										"Bạn vẫn có thể hỏi cẩm nang, mở chức năng và chuẩn bị đặt lịch."
+										o.offline ? "Chưa kết nối được máy chủ. " : "",
+										"Bơ hiện hướng dẫn từ cẩm nang, chưa thể trò chuyện tự do như ChatGPT."
 									] })]
 								}),
 								o.ready && /* @__PURE__ */ (0, R.jsxs)("label", {
@@ -17236,7 +17475,7 @@ function Ql({ config: e, onQuote: t }) {
 										type: "checkbox",
 										checked: c,
 										onChange: (e) => {
-											l(e.target.checked), Hl.consent = e.target.checked, h("");
+											l(e.target.checked), Yl.consent = e.target.checked, h("");
 										}
 									}), /* @__PURE__ */ (0, R.jsxs)("span", { children: ["Tôi đồng ý gửi nội dung trò chuyện tới OpenAI để nhận tư vấn AI. Không nhập mật khẩu, OTP hoặc thông tin thanh toán. ", /* @__PURE__ */ (0, R.jsx)("a", {
 										href: "/chinh-sach#bao-mat",
@@ -17257,7 +17496,7 @@ function Ql({ config: e, onQuote: t }) {
 										/* @__PURE__ */ (0, R.jsx)("textarea", {
 											ref: S,
 											id: "bo-chat-input",
-											placeholder: "Hỏi Bơ về dịch vụ, chi phí hoặc cách đặt lịch…",
+											placeholder: "Kể Bơ nghe tình huống của bạn, hoặc hỏi tiếp điều vừa trao đổi…",
 											value: i,
 											maxLength: 1800,
 											rows: 2,
@@ -17294,7 +17533,7 @@ function Ql({ config: e, onQuote: t }) {
 											onClick: () => y(!0),
 											children: [/* @__PURE__ */ (0, R.jsx)(ue, { size: 13 }), " Chuẩn bị đặt lịch"]
 										}),
-										/* @__PURE__ */ (0, R.jsx)("span", { children: "Bơ hỗ trợ chuẩn bị. Giá & lịch do BOXANH xác nhận." }),
+										/* @__PURE__ */ (0, R.jsx)("span", { children: "Giá & lịch do BOXANH xác nhận." }),
 										/* @__PURE__ */ (0, R.jsx)("span", { children: i.length ? i.length + "/1.800" : "Enter để gửi · Shift + Enter xuống dòng" })
 									]
 								})
@@ -17303,10 +17542,10 @@ function Ql({ config: e, onQuote: t }) {
 					]
 				})]
 			}),
-			/* @__PURE__ */ (0, R.jsx)(Yl, {
+			/* @__PURE__ */ (0, R.jsx)(ru, {
 				open: v,
 				onOpenChange: y,
-				onPrepared: te,
+				onPrepared: ne,
 				onQuote: t
 			}),
 			/* @__PURE__ */ (0, R.jsx)(xs, {
@@ -17328,7 +17567,7 @@ function Ql({ config: e, onQuote: t }) {
 							children: "Giữ hội thoại"
 						}), /* @__PURE__ */ (0, R.jsx)("button", {
 							type: "button",
-							onClick: ne,
+							onClick: re,
 							children: "Bắt đầu mới"
 						})] })
 					]
@@ -17339,7 +17578,7 @@ function Ql({ config: e, onQuote: t }) {
 }
 //#endregion
 //#region src/portal-multipage.jsx
-var $l = [
+var ou = [
 	{
 		href: "/chuyen-tro",
 		title: "Chuyển trọ",
@@ -17368,14 +17607,14 @@ var $l = [
 		index: "03"
 	}
 ];
-function eu({ href: e, children: t, className: n = "" }) {
+function su({ href: e, children: t, className: n = "" }) {
 	return /* @__PURE__ */ (0, R.jsxs)("a", {
 		className: "n7-link " + n,
 		href: e,
 		children: [t, /* @__PURE__ */ (0, R.jsx)(A, { size: 19 })]
 	});
 }
-function tu({ eyebrow: e, title: t, children: n }) {
+function cu({ eyebrow: e, title: t, children: n }) {
 	return /* @__PURE__ */ (0, R.jsxs)("div", {
 		className: "n7-section-head",
 		children: [/* @__PURE__ */ (0, R.jsxs)("div", { children: [/* @__PURE__ */ (0, R.jsx)("p", {
@@ -17384,7 +17623,7 @@ function tu({ eyebrow: e, title: t, children: n }) {
 		}), /* @__PURE__ */ (0, R.jsx)("h2", { children: t })] }), n]
 	});
 }
-function nu() {
+function lu() {
 	let e = (0, E.useRef)(null), t = (0, E.useRef)(null), [n, r] = (0, E.useState)(!1), [i, a] = (0, E.useState)(!1);
 	(0, E.useEffect)(() => {
 		let n = t.current, r = new IntersectionObserver(([t]) => {
@@ -17461,7 +17700,7 @@ function nu() {
 		]
 	});
 }
-function ru() {
+function uu() {
 	let e = (0, E.useRef)(null), [t, n] = (0, E.useState)(!1), [r, i] = (0, E.useState)("");
 	(0, E.useEffect)(() => {
 		let t = e.current;
@@ -17525,7 +17764,7 @@ function ru() {
 		]
 	});
 }
-function iu({ compact: e = !1 }) {
+function du({ compact: e = !1 }) {
 	return /* @__PURE__ */ (0, R.jsxs)("section", {
 		id: "video-huong-dan",
 		className: "n7-tutorial " + (e ? "n7-tutorial-compact" : ""),
@@ -17542,14 +17781,14 @@ function iu({ compact: e = !1 }) {
 					/* @__PURE__ */ (0, R.jsx)("em", { children: "Biết ngay cách dùng." })
 				] }),
 				/* @__PURE__ */ (0, R.jsx)("p", { children: "Xem cách chọn dịch vụ, gửi yêu cầu, xử lý đồ thừa và tra cứu tiến độ." }),
-				/* @__PURE__ */ (0, R.jsx)(eu, {
+				/* @__PURE__ */ (0, R.jsx)(su, {
 					href: e ? "/huong-dan" : "/dat-lich",
 					children: e ? "Mở trung tâm hướng dẫn" : "Thử đặt dịch vụ"
 				})
 			]
 		}), /* @__PURE__ */ (0, R.jsxs)("div", {
 			className: "n7-video-wrap",
-			children: [/* @__PURE__ */ (0, R.jsx)(ru, {}), /* @__PURE__ */ (0, R.jsxs)("div", {
+			children: [/* @__PURE__ */ (0, R.jsx)(uu, {}), /* @__PURE__ */ (0, R.jsxs)("div", {
 				className: "n7-video-caption",
 				children: [/* @__PURE__ */ (0, R.jsxs)("span", { children: [/* @__PURE__ */ (0, R.jsx)(Fe, { size: 14 }), " Hướng dẫn bằng các màn hình thực tế"] }), /* @__PURE__ */ (0, R.jsxs)("a", {
 					href: "/assets/boxanh-huong-dan-v10.mp4",
@@ -17560,7 +17799,7 @@ function iu({ compact: e = !1 }) {
 		})]
 	});
 }
-function G({ config: e }) {
+function fu({ config: e }) {
 	return /* @__PURE__ */ (0, R.jsxs)("div", {
 		className: "portal-home n7-home",
 		"data-portal-home": !0,
@@ -17595,7 +17834,7 @@ function G({ config: e }) {
 							}),
 							/* @__PURE__ */ (0, R.jsxs)("div", {
 								className: "n7-hero-actions",
-								children: [/* @__PURE__ */ (0, R.jsx)(eu, {
+								children: [/* @__PURE__ */ (0, R.jsx)(su, {
 									href: "/uoc-tinh",
 									className: "n7-primary",
 									children: "Ước tính & nhận báo giá"
@@ -17610,7 +17849,7 @@ function G({ config: e }) {
 								children: [/* @__PURE__ */ (0, R.jsxs)("span", { children: [/* @__PURE__ */ (0, R.jsx)(me, { size: 17 }), " Khảo sát trước khi chốt"] }), /* @__PURE__ */ (0, R.jsxs)("span", { children: [/* @__PURE__ */ (0, R.jsx)(ze, { size: 17 }), " Thu hồi hộp để dùng tiếp"] })]
 							})
 						]
-					}), /* @__PURE__ */ (0, R.jsx)(nu, {})]
+					}), /* @__PURE__ */ (0, R.jsx)(lu, {})]
 				}), /* @__PURE__ */ (0, R.jsxs)("div", {
 					className: "n7-hero-bottom n7-wrap",
 					children: [
@@ -17630,17 +17869,17 @@ function G({ config: e }) {
 				className: "n7-wrap n7-home-services",
 				id: "dich-vu",
 				children: [
-					/* @__PURE__ */ (0, R.jsx)(tu, {
+					/* @__PURE__ */ (0, R.jsx)(cu, {
 						eyebrow: "BẠN CẦN LÀM GÌ?",
 						title: "Chọn việc. BOXANH lo tiếp.",
-						children: /* @__PURE__ */ (0, R.jsx)(eu, {
+						children: /* @__PURE__ */ (0, R.jsx)(su, {
 							href: "/dich-vu",
 							children: "Tất cả dịch vụ & bảng giá"
 						})
 					}),
 					/* @__PURE__ */ (0, R.jsx)("div", {
 						className: "n7-service-grid",
-						children: $l.map(({ icon: e, ...t }) => /* @__PURE__ */ (0, R.jsxs)("a", {
+						children: ou.map(({ icon: e, ...t }) => /* @__PURE__ */ (0, R.jsxs)("a", {
 							href: t.href,
 							className: "n7-service-card n7-" + t.className,
 							children: [/* @__PURE__ */ (0, R.jsxs)("div", {
@@ -17724,11 +17963,11 @@ function G({ config: e }) {
 			}),
 			/* @__PURE__ */ (0, R.jsx)("div", {
 				className: "n7-wrap",
-				children: /* @__PURE__ */ (0, R.jsx)(iu, { compact: !0 })
+				children: /* @__PURE__ */ (0, R.jsx)(du, { compact: !0 })
 			}),
 			/* @__PURE__ */ (0, R.jsxs)("section", {
 				className: "n7-wrap n7-home-end",
-				children: [/* @__PURE__ */ (0, R.jsxs)("div", { children: [/* @__PURE__ */ (0, R.jsx)("h2", { children: "Căn phòng mới đang chờ." }), /* @__PURE__ */ (0, R.jsx)("p", { children: "Gửi nhu cầu của bạn. Cùng thống nhất một kế hoạch phù hợp." })] }), /* @__PURE__ */ (0, R.jsx)(eu, {
+				children: [/* @__PURE__ */ (0, R.jsxs)("div", { children: [/* @__PURE__ */ (0, R.jsx)("h2", { children: "Căn phòng mới đang chờ." }), /* @__PURE__ */ (0, R.jsx)("p", { children: "Gửi nhu cầu của bạn. Cùng thống nhất một kế hoạch phù hợp." })] }), /* @__PURE__ */ (0, R.jsx)(su, {
 					href: "/dat-lich",
 					className: "n7-primary",
 					children: "Bắt đầu với BOXANH"
@@ -17737,7 +17976,7 @@ function G({ config: e }) {
 		]
 	});
 }
-var au = {
+var pu = {
 	"/tro-ly-ai": "Bơ · Trợ lý BOXANH",
 	"/chuyen-tro": "Chuyển trọ",
 	"/don-phong": "Dọn phòng",
@@ -17747,29 +17986,29 @@ var au = {
 	"/huong-dan": "Trung tâm hướng dẫn",
 	"/uoc-tinh": "Ước tính dịch vụ"
 };
-function ou({ exclude: e }) {
+function mu({ exclude: e }) {
 	return /* @__PURE__ */ (0, R.jsxs)("section", {
 		className: "n7-wrap n7-related",
-		children: [/* @__PURE__ */ (0, R.jsx)(tu, {
+		children: [/* @__PURE__ */ (0, R.jsx)(cu, {
 			eyebrow: "TIẾP TỤC KHÁM PHÁ",
 			title: "Cùng một hành trình."
 		}), /* @__PURE__ */ (0, R.jsxs)("div", { children: [
-			$l.filter((t) => t.href !== e).map((e) => /* @__PURE__ */ (0, R.jsx)(eu, {
+			ou.filter((t) => t.href !== e).map((e) => /* @__PURE__ */ (0, R.jsx)(su, {
 				href: e.href,
 				children: e.title
 			}, e.href)),
-			/* @__PURE__ */ (0, R.jsx)(eu, {
+			/* @__PURE__ */ (0, R.jsx)(su, {
 				href: "/hop-tai-su-dung",
 				children: "Hộp tái sử dụng"
 			}),
-			/* @__PURE__ */ (0, R.jsx)(eu, {
+			/* @__PURE__ */ (0, R.jsx)(su, {
 				href: "/song-xanh",
 				children: "Xử lý đồ thừa"
 			})
 		] })]
 	});
 }
-function su() {
+function hu() {
 	let e = [
 		"Chốt ngày chuyển và báo chủ trọ",
 		"Tách đồ mang đi, đồ còn giá trị và đồ hỏng",
@@ -17821,7 +18060,7 @@ function su() {
 		}), /* @__PURE__ */ (0, R.jsx)("span", { children: e })] }, e)) })]
 	});
 }
-function cu({ route: e, config: t, onQuote: n }) {
+function gu({ route: e, config: t, onQuote: n }) {
 	let r = (0, E.useRef)(null);
 	(0, E.useEffect)(() => {
 		if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -17833,7 +18072,7 @@ function cu({ route: e, config: t, onQuote: n }) {
 		}), () => t.disconnect();
 	}, [e]);
 	let i;
-	return e === "/tro-ly-ai" && (i = /* @__PURE__ */ (0, R.jsx)(Ql, {
+	return e === "/tro-ly-ai" && (i = /* @__PURE__ */ (0, R.jsx)(au, {
 		config: t,
 		onQuote: n
 	})), e === "/chuyen-tro" && (i = /* @__PURE__ */ (0, R.jsx)(Tl, {
@@ -17841,8 +18080,8 @@ function cu({ route: e, config: t, onQuote: n }) {
 		onQuote: n
 	})), e === "/don-phong" && (i = /* @__PURE__ */ (0, R.jsx)(Dl, {})), e === "/ban-giao" && (i = /* @__PURE__ */ (0, R.jsx)(kl, {})), e === "/hop-tai-su-dung" && (i = /* @__PURE__ */ (0, R.jsx)(jl, {})), e === "/song-xanh" && (i = /* @__PURE__ */ (0, R.jsx)(Nl, {})), e === "/huong-dan" && (i = /* @__PURE__ */ (0, R.jsx)(Pl, {
 		c: t,
-		video: /* @__PURE__ */ (0, R.jsx)(iu, {}),
-		checklist: /* @__PURE__ */ (0, R.jsx)(su, {})
+		video: /* @__PURE__ */ (0, R.jsx)(du, {}),
+		checklist: /* @__PURE__ */ (0, R.jsx)(hu, {})
 	})), e === "/uoc-tinh" && (i = /* @__PURE__ */ (0, R.jsx)(Fl, {
 		c: t,
 		onQuote: n
@@ -17850,28 +18089,28 @@ function cu({ route: e, config: t, onQuote: n }) {
 		ref: r,
 		className: e === "/tro-ly-ai" ? "bo-route-root" : "portal-home n7-detail n7-route-" + e.slice(1),
 		"data-portal-detail": e,
-		children: [i, e !== "/tro-ly-ai" && /* @__PURE__ */ (0, R.jsx)(ou, { exclude: e })]
+		children: [i, e !== "/tro-ly-ai" && /* @__PURE__ */ (0, R.jsx)(mu, { exclude: e })]
 	});
 }
 //#endregion
 //#region src/portal-client.jsx
-var lu, uu;
-function du() {
-	lu?.unmount(), lu = void 0, uu && (uu.unmount(), uu = void 0, document.getElementById("home-assistant-entry").hidden = !0);
+var _u, vu;
+function yu() {
+	_u?.unmount(), _u = void 0, vu && (vu.unmount(), vu = void 0, document.getElementById("home-assistant-entry").hidden = !0);
 }
-function fu(e, t) {
+function bu(e, t) {
 	let n = document.getElementById("home-assistant-entry");
 	if (n) {
 		n.hidden = !1;
 		let e = { identifierPrefix: "boxanh-invite-" };
-		n.querySelector("[data-ai-invite]") ? uu = (0, at.hydrateRoot)(n, /* @__PURE__ */ (0, R.jsx)(Kl, {}), e) : (uu = (0, at.createRoot)(n, e), (0, it.flushSync)(() => uu.render(/* @__PURE__ */ (0, R.jsx)(Kl, {}))));
+		n.querySelector("[data-ai-invite]") ? vu = (0, at.hydrateRoot)(n, /* @__PURE__ */ (0, R.jsx)($l, {}), e) : (vu = (0, at.createRoot)(n, e), (0, it.flushSync)(() => vu.render(/* @__PURE__ */ (0, R.jsx)($l, {}))));
 	}
-	let r = /* @__PURE__ */ (0, R.jsx)(G, { ...t }), i = { identifierPrefix: "boxanh-home-" };
-	e.querySelector("[data-portal-home]") ? lu = (0, at.hydrateRoot)(e, r, i) : (e.replaceChildren(), lu = (0, at.createRoot)(e, i), (0, it.flushSync)(() => lu.render(r)));
+	let r = /* @__PURE__ */ (0, R.jsx)(fu, { ...t }), i = { identifierPrefix: "boxanh-home-" };
+	e.querySelector("[data-portal-home]") ? _u = (0, at.hydrateRoot)(e, r, i) : (e.replaceChildren(), _u = (0, at.createRoot)(e, i), (0, it.flushSync)(() => _u.render(r)));
 }
-function pu(e, t) {
-	let n = /* @__PURE__ */ (0, R.jsx)(cu, { ...t }), r = { identifierPrefix: "boxanh-detail-" };
-	e.querySelector("[data-portal-detail]") ? lu = (0, at.hydrateRoot)(e, n, r) : (e.replaceChildren(), lu = (0, at.createRoot)(e, r), (0, it.flushSync)(() => lu.render(n)));
+function xu(e, t) {
+	let n = /* @__PURE__ */ (0, R.jsx)(gu, { ...t }), r = { identifierPrefix: "boxanh-detail-" };
+	e.querySelector("[data-portal-detail]") ? _u = (0, at.hydrateRoot)(e, n, r) : (e.replaceChildren(), _u = (0, at.createRoot)(e, r), (0, it.flushSync)(() => _u.render(n)));
 }
 //#endregion
-export { au as detailTitles, du as disposePortalHome, pu as mountPortalDetail, fu as mountPortalHome };
+export { pu as detailTitles, yu as disposePortalHome, xu as mountPortalDetail, bu as mountPortalHome };

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node server.mjs",
-    "check": "node --check server.mjs && node --check public/app.js && node --check public/experience.js && node --check public/crate.js && node --check public/content.js && node --check public/service.js && node --check public/diagnostics.js && node --check public/shared.js && node --check public/upgrade.js && node --check public/studio.js && node --check public/studio-view.js && node --check dist/portal-server.mjs && node --check public/portal/app.js && node --check public/api-client.js && node --check scripts/export-github-pages.mjs && node --check server/assistant.mjs && node --check public/assistant-knowledge.js",
+    "check": "node --check server.mjs && node --check public/app.js && node --check public/experience.js && node --check public/crate.js && node --check public/content.js && node --check public/service.js && node --check public/diagnostics.js && node --check public/shared.js && node --check public/upgrade.js && node --check public/studio.js && node --check public/studio-view.js && node --check dist/portal-server.mjs && node --check public/portal/app.js && node --check public/api-client.js && node --check scripts/export-github-pages.mjs && node --check server/assistant.mjs && node --check server/assistant-instructions.mjs && node --check public/assistant-knowledge.js && node --check public/assistant-conversation.js",
     "test": "node --test tests/*.test.mjs",
     "prepare-assets": "node scripts/prepare-assets.mjs",
     "postinstall": "node scripts/prepare-assets.mjs",
