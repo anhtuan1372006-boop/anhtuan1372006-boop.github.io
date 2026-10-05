@@ -66,20 +66,22 @@ GitHub Pages chỉ phục vụ giao diện. Khóa phải nằm ở backend Node,
 - Hội thoại AI gửi lại tối đa 16 tin và 18.000 ký tự, gồm câu trả lời cẩm nang và dữ liệu bản nháp được xem. Tin lỗi/đang viết dở không được phát lại. Mô hình được hướng dẫn nhớ lựa chọn đã có, dùng sửa đổi mới nhất, hỏi từng bước, trả lời nhiều ý và không sao chép cẩm nang một cách máy móc.
 - Câu trả lời hỗ trợ đoạn, tiêu đề ngắn, danh sách và in đậm bằng React; không chạy HTML do người dùng hoặc mô hình đưa vào. Có gợi ý tiếp nối, dừng trả lời và thử lại câu hỏi lỗi mà không nhân đôi câu hỏi trước trong ngữ cảnh.
 - Hội thoại giữ trong bộ nhớ của phiên trình duyệt, không ghi vào SQLite của BOXANH. Câu trả lời có thể được sao chép. Cuộc trò chuyện mới có hộp xác nhận. Tải lại trang sẽ bỏ hội thoại.
-- Chế độ AI chỉ gửi hội thoại sau khi khách đồng ý. Yêu cầu nhà cung cấp dùng `store:false`; điều này không phải cam kết nhà cung cấp không xử lý/lưu dữ liệu theo chính sách của họ. Xem [hướng dẫn dữ liệu API của OpenAI](https://developers.openai.com/api/docs/guides/your-data).
+- Chế độ AI chỉ xử lý hội thoại sau khi khách đồng ý. Nhánh OpenAI gửi `store:false`; điều này không phải cam kết nhà cung cấp không xử lý/lưu dữ liệu theo chính sách của họ. Xem [hướng dẫn dữ liệu API của OpenAI](https://developers.openai.com/api/docs/guides/your-data). Nhánh trên máy gửi hội thoại tới Ollama ở loopback, không gọi OpenAI.
 
 ## Kiểm chứng chất lượng
 
 `npm test` kiểm tra ngữ cảnh cẩm nang, thay đổi chủ đề, lịch sử có bản nháp, công cụ gợi ý, nhiều vòng công cụ và giới hạn đầu vào. Các kiểm thử mô hình sử dụng nhà cung cấp giả lập tại máy, không chứng minh chất lượng câu trả lời GPT thực tế.
 
-Sau khi có khóa và hạn mức, cần kiểm tra thực tế ít nhất các tình huống: sinh viên lần đầu; muốn tiết kiệm; đổi số hộp/quãng đường sau báo giá; hỏi “gói đó”; dọn phòng rồi hỏi giá; yêu cầu nhiều dịch vụ; khách vội; sự cố đồ đạc; ký gửi có giảm phí ngay không; hỏi chức năng chưa triển khai. Chỉ đánh giá đạt khi câu trả lời đúng điều kiện kinh doanh, không hỏi lại thông tin đã có, gọi bộ tính giá và không tự xác nhận lịch.
+Sau khi kết nối mô hình trên máy hoặc có khóa/hạn mức OpenAI, cần kiểm tra thực tế ít nhất các tình huống: sinh viên lần đầu; muốn tiết kiệm; đổi số hộp/quãng đường sau báo giá; hỏi “gói đó”; dọn phòng rồi hỏi giá; yêu cầu nhiều dịch vụ; khách vội; sự cố đồ đạc; ký gửi có giảm phí ngay không; hỏi chức năng chưa triển khai. Chỉ đánh giá đạt khi câu trả lời đúng điều kiện kinh doanh, không hỏi lại thông tin đã có, gọi bộ tính giá và không tự xác nhận lịch.
+
+Ngày 06/10/2026, bản trên máy đã qua 42 kiểm thử tự động và ba tình huống thực tế: Qwen3 4B tư vấn chọn Gọn nhẹ khi khách tự đóng 8 hộp; bộ tính giá trả Trọn gói 654.000đ; giữ ngữ cảnh và sửa số hộp/quãng đường rồi trả 588.000đ. Trường hợp tư vấn bằng mô hình thật mất khoảng 87 giây trên CPU và đã hiển thị đúng trong trình duyệt. Đây là kiểm chứng phạm vi trên máy, chưa chứng minh mọi tình huống hay đường truyền công khai. Xem [AI-PUBLIC-START.md](AI-PUBLIC-START.md) cho trạng thái chia sẻ bản đã chạy.
 
 Bản này nâng cấp cách tích hợp, hướng dẫn mô hình và dữ liệu website. Chưa thực hiện fine-tuning hay huấn luyện trọng số, chưa có phép đo chứng minh “thông minh gấp 100 lần”. Không được quảng cáo chatbot như đã đạt chất lượng ChatGPT khi API chưa bật hoặc chưa kiểm chứng thực tế.
 - Khóa luôn ở backend. Tin nhắn có giới hạn, vai trò system từ khách bị từ chối; công cụ kiểm tra đầu vào, chỉ dùng đường dẫn BOXANH; lỗi nhà cung cấp được rút gọn. Model vẫn có thể trả lời sai, nên quyết định về lịch/giá/đền bù cần nhân sự xác nhận.
-- Bản thử nghiệm giới hạn ba lượt AI đang chạy đồng thời, 20 yêu cầu/10 phút theo địa chỉ kết nối và mặc định 100 lượt/ngày. Bộ đếm nằm trong bộ nhớ, đặt lại khi khởi động server. Đây không thay thế hạn mức chi tiêu của nhà cung cấp; khi chạy nhiều máy chủ cần giới hạn tập trung và chống lạm dụng phù hợp.
+- Bản thử nghiệm giới hạn ba lượt OpenAI hoặc một lượt mô hình trên máy đang chạy đồng thời, 20 yêu cầu/10 phút theo địa chỉ kết nối và mặc định 100 lượt sinh câu trả lời AI/ngày. Bộ đếm nằm trong bộ nhớ, đặt lại khi khởi động server. Đây không thay thế hạn mức chi tiêu của nhà cung cấp; khi chạy nhiều máy chủ cần giới hạn tập trung và chống lạm dụng phù hợp.
 
 ## Kiểm tra trước vận hành
 
-Chạy `npm run build`, `npm run check`, `npm test`. Bộ kiểm tra dùng mô phỏng API, không gọi mô hình trả phí. Chỉ một lượt kiểm tra với khóa thật mới xác nhận kết nối AI thực tế.
+Chạy `npm run build`, `npm run check`, `npm test`. Bộ kiểm tra dùng mô phỏng API, không gọi mô hình trả phí. Phải thử một lượt hội thoại với nhà cung cấp đang chọn để xác nhận kết nối thực tế: mô hình đã tải ở nhánh trên máy, hoặc khóa/hạn mức thật ở nhánh OpenAI.
 
 Thử trên trình duyệt: tư vấn gói, tính giá, dọn phòng cần khảo sát, ký gửi không trừ phí trước, mở tra cứu, chuẩn bị lịch rồi sửa thông tin, dừng câu trả lời, mất kết nối, điện thoại và lựa chọn giảm chuyển động. Không gửi đơn thử vào dữ liệu khách thật.
