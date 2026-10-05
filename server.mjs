@@ -1,4 +1,4 @@
-import {renderPortalHome,renderPortalDetail,detailTitles} from './dist/portal-server.mjs';
+import {renderPortalHome,renderPortalDetail,renderHomeAssistant,detailTitles} from './dist/portal-server.mjs';
 import {serviceView} from './public/service.js';
 import {faqView,productCardsView,sampleProducts} from './public/shared.js';
 import {createAssistantService,validateChatBody} from './server/assistant.mjs';
@@ -195,6 +195,8 @@ function renderPublicHTML(template,route,c){
  const page=route==='/'?renderPortalHome(c):route==='/dich-vu'?serviceView(ctx):detailTitles[route]?renderPortalDetail(route,c):null;
  const pageTitles={'/':'BOXANH — Chuyển trọ Vinh, dọn phòng & bàn giao','/dich-vu':'Dịch vụ & giá tham khảo tại Vinh — BOXANH','/ho-tro':'CSKH & sự cố đồ đạc — BOXANH','/dat-lich':'Nhận báo giá dịch vụ — BOXANH'};
  let result=template.replace('<!--BOXANH_CONFIG-->',()=>'<script type="application/json" id="site-config">'+JSON.stringify(c).replaceAll('<','\\u003c')+'</script>');
+ result=result.replace('<!--BOXANH_ASSISTANT_ENTRY-->',()=>route==='/'?renderHomeAssistant():'');
+ if(route!=='/')result=result.replace('data-home-assistant>','data-home-assistant hidden>');
  result=result.replace('<body data-route="/">','<body data-route="'+pageEscape(route)+'">');
  if(route!=='/')result=result.replace('data-service-masthead>','data-service-masthead hidden>');
  result=result.replace(/<title>[^<]*<\/title>/,()=>'<title>'+pageEscape(pageTitles[route]||(detailTitles[route]?detailTitles[route]+' — BOXANH':'BOXANH — Dịch vụ tại Vinh'))+'</title>');

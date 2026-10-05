@@ -3624,7 +3624,6 @@ function PortalHome({ config: c }) {
 		className: "portal-home n7-home",
 		"data-portal-home": true,
 		children: [
-			/* @__PURE__ */ jsx(AIHomeInvite, {}),
 			/* @__PURE__ */ jsxs("section", {
 				className: "n7-home-hero",
 				children: [/* @__PURE__ */ jsxs("div", {
@@ -3930,6 +3929,9 @@ function PortalDetail({ route, config: c, onQuote }) {
 }
 //#endregion
 //#region src/portal-server.jsx
+function renderHomeAssistant() {
+	return renderToString(/* @__PURE__ */ jsx(AIHomeInvite, {}), { identifierPrefix: "boxanh-invite-" });
+}
 function renderPortalHome(config) {
 	return renderToString(/* @__PURE__ */ jsx(PortalHome, { config }), { identifierPrefix: "boxanh-home-" });
 }
@@ -3940,4 +3942,4 @@ function renderPortalDetail(route, config) {
 	}), { identifierPrefix: "boxanh-detail-" });
 }
 //#endregion
-export { detailTitles, renderPortalDetail, renderPortalHome };
+export { detailTitles, renderHomeAssistant, renderPortalDetail, renderPortalHome };

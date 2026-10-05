@@ -9,10 +9,14 @@ import {randomUUID} from 'node:crypto';
 test('detail pages start in their own scene and hide the homepage hub before JavaScript',async()=>{
  const home=await (await fetch(origin+'/')).text();
  assert.match(home,/data-service-masthead>/);
+ assert.equal((home.match(/data-ai-invite/g)||[]).length,1);
+ assert.ok(home.indexOf('data-ai-invite')<home.indexOf('data-service-masthead'));
  const scenes={'chuyen-tro':'v10-moving','don-phong':'v10-cleaning','ban-giao':'v10-handover','hop-tai-su-dung':'v10-boxes','song-xanh':'v10-green','huong-dan':'v10-guide-intro','uoc-tinh':'v10-quote-intro'};
  for(const [route,scene] of Object.entries(scenes)){
   const html=await (await fetch(origin+'/'+route)).text();
   assert.match(html,/data-service-masthead hidden>/);
+  assert.match(html,/data-home-assistant hidden>/);
+  assert.ok(!html.includes('data-ai-invite'));
   assert.ok(html.includes('data-route="/'+route+'"'));
   const main=html.match(/<main id="main"[^>]*>([\s\S]*?)<\/main>/)[1];
   assert.ok(main.includes(scene));
@@ -147,6 +151,7 @@ test('box rental tracking omits transport, logout revokes session',async()=>{con
 test('assistant has an independent page, an honest disabled mode, consent validation and public-client CORS',async()=>{
  const html=await (await fetch(origin+'/tro-ly-ai')).text();
  assert.match(html,/data-assistant-page/);assert.match(html,/class="bo-route-root"/);
+ assert.match(html,/data-home-assistant hidden>/);assert.ok(!html.includes('data-ai-invite'));
  const main=html.match(/<main id="main"[^>]*>([\s\S]*?)<\/main>/)[1];
  assert.ok(!main.includes('n7-home-hero')&&!main.includes('n7-related'));
  const status=await fetch(origin+'/api/assistant/status',{headers:{Origin:'https://anhtuan1372006-boop.github.io'}});

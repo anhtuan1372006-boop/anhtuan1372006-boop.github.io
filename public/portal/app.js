@@ -17565,7 +17565,6 @@ function G({ config: e }) {
 		className: "portal-home n7-home",
 		"data-portal-home": !0,
 		children: [
-			/* @__PURE__ */ (0, R.jsx)(Kl, {}),
 			/* @__PURE__ */ (0, R.jsxs)("section", {
 				className: "n7-home-hero",
 				children: [/* @__PURE__ */ (0, R.jsxs)("div", {
@@ -17856,17 +17855,23 @@ function cu({ route: e, config: t, onQuote: n }) {
 }
 //#endregion
 //#region src/portal-client.jsx
-var lu;
-function uu() {
-	lu?.unmount(), lu = void 0;
-}
-function du(e, t) {
-	let n = /* @__PURE__ */ (0, R.jsx)(G, { ...t }), r = { identifierPrefix: "boxanh-home-" };
-	e.querySelector("[data-portal-home]") ? lu = (0, at.hydrateRoot)(e, n, r) : (e.replaceChildren(), lu = (0, at.createRoot)(e, r), (0, it.flushSync)(() => lu.render(n)));
+var lu, uu;
+function du() {
+	lu?.unmount(), lu = void 0, uu && (uu.unmount(), uu = void 0, document.getElementById("home-assistant-entry").hidden = !0);
 }
 function fu(e, t) {
+	let n = document.getElementById("home-assistant-entry");
+	if (n) {
+		n.hidden = !1;
+		let e = { identifierPrefix: "boxanh-invite-" };
+		n.querySelector("[data-ai-invite]") ? uu = (0, at.hydrateRoot)(n, /* @__PURE__ */ (0, R.jsx)(Kl, {}), e) : (uu = (0, at.createRoot)(n, e), (0, it.flushSync)(() => uu.render(/* @__PURE__ */ (0, R.jsx)(Kl, {}))));
+	}
+	let r = /* @__PURE__ */ (0, R.jsx)(G, { ...t }), i = { identifierPrefix: "boxanh-home-" };
+	e.querySelector("[data-portal-home]") ? lu = (0, at.hydrateRoot)(e, r, i) : (e.replaceChildren(), lu = (0, at.createRoot)(e, i), (0, it.flushSync)(() => lu.render(r)));
+}
+function pu(e, t) {
 	let n = /* @__PURE__ */ (0, R.jsx)(cu, { ...t }), r = { identifierPrefix: "boxanh-detail-" };
 	e.querySelector("[data-portal-detail]") ? lu = (0, at.hydrateRoot)(e, n, r) : (e.replaceChildren(), lu = (0, at.createRoot)(e, r), (0, it.flushSync)(() => lu.render(n)));
 }
 //#endregion
-export { au as detailTitles, uu as disposePortalHome, fu as mountPortalDetail, du as mountPortalHome };
+export { au as detailTitles, du as disposePortalHome, pu as mountPortalDetail, fu as mountPortalHome };
