@@ -6,7 +6,7 @@ Giao diện: https://anhtuan1372006-boop.github.io/
 
 ## Kiến trúc
 
-GitHub Actions build React, chạy kiểm tra, xuất 17 đường dẫn công khai rồi triển khai GitHub Pages. Trang có thể mở trực tiếp hoặc tải lại ở đường dẫn con. Trang quản trị không nằm trong bản xuất tĩnh.
+GitHub Actions build React, chạy kiểm tra, xuất 18 đường dẫn công khai rồi triển khai GitHub Pages. Trang có thể mở trực tiếp hoặc tải lại ở đường dẫn con. Trang quản trị không nằm trong bản xuất tĩnh.
 
 GitHub Pages không chạy server.mjs hoặc SQLite. Biến Actions `BOXANH_API_BASE` chỉ định URL HTTPS của máy chủ API. `public/api-client.js` chuyển các lời gọi API công khai tới máy chủ đó; không gửi cookie và không chuyển API quản trị. Ảnh đồ cũ công khai cũng dùng URL API tương ứng.
 
@@ -42,3 +42,7 @@ Video được dựng từ ảnh chụp giao diện thật, giọng Microsoft An
 ## Để vận hành lâu dài
 
 Triển khai backend Node 24/SQLite bằng Dockerfile hiện có lên máy chủ có HTTPS, ổ lưu trữ bền vững, sao lưu và mật khẩu quản trị riêng; cập nhật BOXANH_API_BASE. Xem DEPLOYMENT.md. Bảng giá vẫn là tham khảo và yêu cầu khảo sát; chưa có SMS, GPS hoặc cổng thanh toán.
+
+## Trợ lý Bơ
+
+Trang riêng: /tro-ly-ai. Khóa OpenAI chỉ cấu hình ở backend; khi chưa có khóa, giao diện ghi rõ chế độ cẩm nang. Xem [AI-SETUP.md](AI-SETUP.md) để kích hoạt hội thoại AI, giới hạn lượt sử dụng và điều kiện vận hành.

@@ -1,6 +1,7 @@
 import {renderPortalHome,renderPortalDetail,detailTitles} from './dist/portal-server.mjs';
 import {serviceView} from './public/service.js';
 import {faqView,productCardsView,sampleProducts} from './public/shared.js';
+import {createAssistantService,validateChatBody} from './server/assistant.mjs';
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
@@ -42,6 +43,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS issues (id INTEGER PRIMARY KEY, code TEXT UN
 const defaults={brand:'BOXANH',area:'Vinh, Nghệ An',phone:'0332357455',email:'',priceMode:'reference',bookingEnabled:true,smallBase:350000,fullBase:500000,boxBase:100000,boxUnit:10000,distanceUnit:18000,stairsUnit:25000,bulkyUnit:50000,packingFee:100000,rentalDays:5,extraBoxDay:5000};
 if (!db.prepare('SELECT value FROM settings WHERE key=?').get('config')) db.prepare('INSERT INTO settings VALUES(?,?)').run('config',JSON.stringify(defaults));
 function config(){return {...defaults,...JSON.parse(db.prepare('SELECT value FROM settings WHERE key=?').get('config').value)};}
+const assistant=createAssistantService({config,estimate});
 function audit(action,id,detail){db.prepare('INSERT INTO audit(action,record_id,detail,created_at) VALUES(?,?,?,?)').run(action,String(id),JSON.stringify(detail),new Date().toISOString());}
 const secretPath=path.join(DATA,'admin-auth.json');
 let adminAuth;
@@ -87,7 +89,7 @@ function estimate(input){const c=config();const service=enumValue(input.service,
 function parsePhotos(photos){if(photos===undefined)return [];if(!Array.isArray(photos)||photos.length>4)fail(400,'Tối đa 4 ảnh.');return photos.map(p=>{if(typeof p?.data!=='string'||p.data.length>3000000)fail(400,'Mỗi ảnh cần nhỏ hơn 2 MB.');const match=p.data.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);if(!match)fail(400,'Ảnh cần ở định dạng JPG, PNG hoặc WebP.');const data=Buffer.from(match[2],'base64');if(data.length>2*1024*1024)fail(400,'Ảnh vượt quá 2 MB.');const mime=match[1];if((mime==='image/jpeg'&&!(data[0]===255&&data[1]===216&&data[2]===255))||(mime==='image/png'&&data.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')||(mime==='image/webp'&&!(data.subarray(0,4).toString()==='RIFF'&&data.subarray(8,12).toString()==='WEBP')))fail(400,'Nội dung tệp không phải ảnh hợp lệ.');return {mime,data};});}
 function savePhotos(photos,kind,id){for(const photo of photos)db.prepare('INSERT INTO photos VALUES(?,?,?,?,?)').run(randomBytes(16).toString('hex'),kind,id,photo.mime,photo.data);}
 function photoList(kind,id){return db.prepare('SELECT id,mime FROM photos WHERE kind=? AND record_id=?').all(kind,id).map(p=>({id:p.id,url:'/api/admin/photos/'+p.id}));}
-async function body(req){if(!/^application\/json\b/i.test(req.headers['content-type']||''))fail(415,'Yêu cầu cần là JSON.');let size=0;const chunks=[];for await(const chunk of req){size+=chunk.length;if(size>12*1024*1024)fail(413,'Dữ liệu quá lớn. Vui lòng giảm dung lượng ảnh.');chunks.push(chunk);}try {return JSON.parse(Buffer.concat(chunks).toString());}catch{fail(400,'Dữ liệu chưa hợp lệ.');}}
+async function body(req,maxBytes=12*1024*1024){if(!/^application\/json\b/i.test(req.headers['content-type']||''))fail(415,'Yêu cầu cần là JSON.');let size=0;const chunks=[];for await(const chunk of req){size+=chunk.length;if(size>maxBytes)fail(413,'Dữ liệu quá lớn. Vui lòng rút gọn nội dung hoặc giảm dung lượng ảnh.');chunks.push(chunk);}try {return JSON.parse(Buffer.concat(chunks).toString());}catch{fail(400,'Dữ liệu chưa hợp lệ.');}}
 function secureHeaders(res){res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('X-Frame-Options','DENY');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.unsplash.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");}
 function json(res,value,status=200){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));}
 function admin(req){const cookie=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('boxanh_session='));const token=cookie?.slice(15);if(!token)fail(401,'Vui lòng đăng nhập quản trị.');const hash=createHash('sha256').update(token).digest('hex');if(!db.prepare('SELECT token_hash FROM sessions WHERE token_hash=? AND expires>?').get(hash,Date.now()))fail(401,'Phiên quản trị đã hết hạn.');return hash;}
@@ -99,6 +101,15 @@ function inventory(){const inv=db.prepare('SELECT * FROM inventory WHERE id=1').
 function publicTracking(record,kind){if(kind==='booking'){const p=JSON.parse(record.payload);return {kind,code:record.code,name:record.name.split(' ').slice(-1)[0],status:record.status,label:statusLabels[record.status],date:p.date,slot:p.slot,service:p.service,boxes:p.boxes,estimate:record.estimate,finalQuote:record.final_quote,credit:record.buyback_credit,createdAt:record.created_at,events:db.prepare('SELECT status,note,created_at FROM events WHERE booking_id=? ORDER BY id').all(record.id).map(e=>({...e,label:statusLabels[e.status]})),steps:bookingSteps(p.service).map(s=>({status:s,label:statusLabels[s]}))};}return {kind,code:record.code,status:record.status,label:goodsLabels[record.status],mode:record.mode,category:record.category,valuation:record.valuation,payout:record.payout,credit:record.service_credit,createdAt:record.created_at};}
 async function api(req,res,url){const route=url.pathname,method=req.method;
   if(method!=='GET')sameOrigin(req);
+  if(method==='GET'&&route==='/api/assistant/status')return json(res,assistant.status());
+  if(method==='POST'&&route==='/api/assistant/chat'){
+    rate(req,'assistant',20);const messages=validateChatBody(await body(req,80000));
+    if(!assistant.status().ready)fail(503,'AI chưa được kích hoạt. Cẩm nang và biểu mẫu đặt lịch vẫn sử dụng được.');
+    const controller=new AbortController();res.on('close',()=>controller.abort());
+    res.writeHead(200,{'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-cache, no-transform','X-Accel-Buffering':'no'});
+    const emit=value=>{if(!res.destroyed)res.write('data: '+JSON.stringify(value)+'\n\n');};
+    try{await assistant.stream(messages,{signal:controller.signal,onEvent:emit});}catch(e){if(!controller.signal.aborted)emit({type:'error',message:e.status?e.message:'Bơ chưa kết nối được dịch vụ AI. Bạn thử lại hoặc gọi BOXANH nhé.'});}finally{res.end();}return;
+  }
   if(method==='GET'&&route==='/api/config')return json(res,{...config(),publicPreview:process.env.PUBLIC_PREVIEW==='1'});
   if(method==='GET'&&route==='/api/products')return json(res,db.prepare('SELECT * FROM products WHERE available=1 ORDER BY id DESC').all());
   if(method==='GET'&&route.startsWith('/api/product-photos/')){const photo=db.prepare("SELECT mime,data FROM photos WHERE id=? AND kind='product'").get(route.split('/').at(-1));if(!photo)fail(404,'Không tìm thấy ảnh món đồ.');res.writeHead(200,{'Content-Type':photo.mime,'Cache-Control':'public, max-age=3600'});return res.end(Buffer.from(photo.data));}

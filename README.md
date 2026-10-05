@@ -48,3 +48,7 @@ Giá chỉ là tham khảo. Dọn phòng/bàn giao cần khảo sát. Thu mua đ
 DATA_DIR chứa SQLite, ảnh riêng tư và thông tin truy cập quản trị. ADMIN_PASSWORD dùng cho triển khai mới; đặt qua biến môi trường hoặc secret. Không đưa data/, .runtime/, .env thật và node_modules vào kho công khai hoặc ZIP chia sẻ. Bộ ZIP không chứa dữ liệu khách hàng hay mật khẩu. Dữ liệu của bản đang chạy trên máy vẫn được giữ nguyên.
 
 Giữ ổ dữ liệu bền vững khi triển khai. Xem DEPLOYMENT.md và .env.example. Ảnh ý tưởng AI, ảnh tham khảo và mô hình minh họa được ghi rõ trong giao diện; nguồn trong asset-manifest.json và giấy phép phần mềm trong licenses/.
+
+## Trợ lý Bơ
+
+Robot màu tím/cam ở đầu trang chủ dẫn tới /tro-ly-ai, một phòng trò chuyện riêng. Có cẩm nang toàn bộ nhóm chức năng, hướng dẫn điều hướng, công cụ báo giá và bản nháp đặt lịch. AI thật cần khóa riêng ở backend; trạng thái chờ kích hoạt được ghi rõ. Cấu hình và phạm vi: [AI-SETUP.md](AI-SETUP.md).

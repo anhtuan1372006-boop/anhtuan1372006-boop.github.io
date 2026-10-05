@@ -33,3 +33,7 @@ Cần tài khoản hỗ trợ Node 24 hoặc Docker, HTTPS và ổ dữ liệu b
 DATA_DIR chứa dữ liệu riêng: không đưa vào ZIP/kho công khai. Dùng online backup SQLite hoặc dừng máy chủ có kiểm soát trước khi chép dữ liệu. Không xóa volume khi cập nhật ứng dụng.
 
 Sửa src/ cần build lại và khởi động lại server để nội dung SSR đồng bộ client. Biến môi trường tham khảo .env.example. API hiện có bảo vệ quản trị, ảnh riêng tư, tra cứu và ghi chéo nguồn; robots.txt không thay thế xác thực.
+
+## AI hội thoại
+
+Backend đọc OPENAI_API_KEY, OPENAI_MODEL, BOXANH_AI_ENABLED và BOXANH_AI_DAILY_LIMIT từ môi trường hoặc .env riêng. Không đặt khóa trong GitHub Pages, biến xuất giao diện hoặc mã phía trình duyệt. Sau khi cấu hình, khởi động lại Node. Chi tiết: [AI-SETUP.md](AI-SETUP.md).

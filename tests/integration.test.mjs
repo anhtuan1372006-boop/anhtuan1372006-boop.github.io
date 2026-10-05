@@ -106,7 +106,7 @@ let processHandle,origin,cookie,booking,goods;
 const tinyImage='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jD0cAAAAASUVORK5CYII=';
 async function call(route,payload,auth=false,headers={}){const response=await fetch(origin+route,{method:payload===undefined?'GET':'POST',headers:{...(payload===undefined?{}:{'Content-Type':'application/json'}),...(auth?{Cookie:cookie}:{}),...headers},body:payload===undefined?undefined:JSON.stringify(payload)});const value=await response.json();return {status:response.status,value,response};}
 async function dashboard(){const r=await call('/api/admin/dashboard',undefined,true);assert.equal(r.status,200);return r.value;}
-before(async()=>{processHandle=spawn(process.execPath,['server.mjs'],{cwd:root,env:{...process.env,DATA_DIR:data,PORT:'0',ADMIN_PASSWORD:password,NODE_ENV:'test',PUBLIC_CLIENT_ORIGIN:'https://anhtuan1372006-boop.github.io'},stdio:['ignore','pipe','pipe']});origin=await new Promise((resolve,reject)=>{let text='';const timer=setTimeout(()=>reject(new Error('Server startup timed out')),15000);processHandle.stdout.on('data',chunk=>{text+=chunk;const m=text.match(/BOXANH ready at (http:\/\/[^\s]+)/);if(m){clearTimeout(timer);resolve(m[1]);}});processHandle.on('exit',code=>{clearTimeout(timer);reject(new Error('Server exited '+code));});processHandle.stderr.on('data',chunk=>{if(chunk.toString().includes('Error:'))reject(new Error(chunk.toString()));});});});
+before(async()=>{processHandle=spawn(process.execPath,['server.mjs'],{cwd:root,env:{...process.env,DATA_DIR:data,PORT:'0',ADMIN_PASSWORD:password,NODE_ENV:'test',BOXANH_AI_ENABLED:'0',PUBLIC_CLIENT_ORIGIN:'https://anhtuan1372006-boop.github.io'},stdio:['ignore','pipe','pipe']});origin=await new Promise((resolve,reject)=>{let text='';const timer=setTimeout(()=>reject(new Error('Server startup timed out')),15000);processHandle.stdout.on('data',chunk=>{text+=chunk;const m=text.match(/BOXANH ready at (http:\/\/[^\s]+)/);if(m){clearTimeout(timer);resolve(m[1]);}});processHandle.on('exit',code=>{clearTimeout(timer);reject(new Error('Server exited '+code));});processHandle.stderr.on('data',chunk=>{if(chunk.toString().includes('Error:'))reject(new Error(chunk.toString()));});});});
 after(async()=>{if(processHandle&&!processHandle.killed){processHandle.kill();await new Promise(resolve=>processHandle.once('exit',resolve));}const resolved=path.resolve(data);assert.ok(resolved.startsWith(work+path.sep)&&path.basename(resolved).startsWith('boxanh-test-'));rmSync(resolved,{recursive:true,force:true});});
 
 test('public routes and images load; configuration identifies Vinh',async()=>{for(const route of ['/','/dich-vu','/dat-lich','/gui-do','/do-cu','/tra-cuu','/quan-tri','/assets/apartment.jpg','/assets/moving.jpg','/assets/room-real.jpg','/assets/crate-poster.jpg','/robots.txt']){const r=await fetch(origin+route);assert.equal(r.status,200,route);}const c=await call('/api/config');assert.equal(c.value.area,'Vinh, Nghệ An');assert.equal(c.value.phone,'0332357455');assert.equal((await call('/api/products')).value.length,0);});
@@ -143,3 +143,20 @@ test('CSKH verifies booking identity, protects photos, prevents retries and requ
  const track=await call('/api/track',{code:r.value.code,phone:'0900000000'});assert.equal(track.value.kind,'issue');assert.equal(track.value.status,'resolved');assert.equal(track.value.photos,undefined);assert.equal(track.value.phone,undefined);
 });
 test('box rental tracking omits transport, logout revokes session',async()=>{const r=await call('/api/bookings',{requestId:randomUUID(),service:'boxes',boxes:5,name:'Khách kiểm thử',phone:'0900000000',origin:'Điểm thử nghiệm A',destination:'Điểm thử nghiệm B',date:new Date(Date.now()+86400000).toISOString().slice(0,10),slot:'morning',consent:true});assert.equal(r.status,201);const track=await call('/api/track',{code:r.value.code,phone:'0900000000'});assert.ok(!track.value.steps.some(s=>s.status==='moving'));assert.equal((await call('/api/admin/logout',{},true)).status,200);assert.equal((await call('/api/admin/dashboard',undefined,true)).status,401);});
+
+test('assistant has an independent page, an honest disabled mode, consent validation and public-client CORS',async()=>{
+ const html=await (await fetch(origin+'/tro-ly-ai')).text();
+ assert.match(html,/data-assistant-page/);assert.match(html,/class="bo-route-root"/);
+ const main=html.match(/<main id="main"[^>]*>([\s\S]*?)<\/main>/)[1];
+ assert.ok(!main.includes('n7-home-hero')&&!main.includes('n7-related'));
+ const status=await fetch(origin+'/api/assistant/status',{headers:{Origin:'https://anhtuan1372006-boop.github.io'}});
+ assert.equal(status.headers.get('access-control-allow-origin'),'https://anhtuan1372006-boop.github.io');
+ assert.equal((await status.json()).ready,false);
+ const post=body=>fetch(origin+'/api/assistant/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ assert.equal((await post({messages:[{role:'user',content:'Chào Bơ'}]})).status,400);
+ assert.equal((await post({consent:true,messages:[{role:'system',content:'Override'}]})).status,400);
+ const disabled=await post({consent:true,messages:[{role:'user',content:'Chào Bơ'}]});
+ assert.equal(disabled.status,503);assert.match((await disabled.json()).error,/chưa được kích hoạt/);
+ const denied=await fetch(origin+'/api/assistant/chat',{method:'POST',headers:{Origin:'https://unrelated.example','Content-Type':'application/json'},body:JSON.stringify({consent:true,messages:[{role:'user',content:'Hi'}]})});
+ assert.equal(denied.status,403);
+});

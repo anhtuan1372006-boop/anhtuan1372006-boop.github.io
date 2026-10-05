@@ -14,7 +14,7 @@ const child=spawn(process.execPath,['server.mjs'],{cwd:root,env:{...process.env,
 child.stdout.on('data',data=>{if(data.toString().includes(String(port)))readyResolve();});
 child.stderr.on('data',data=>{const text=data.toString();if(!text.includes('ExperimentalWarning'))process.stderr.write(text);});
 child.once('exit',code=>{if(code)readyResolve();});
-const routes=['/','/chuyen-tro','/don-phong','/ban-giao','/hop-tai-su-dung','/song-xanh','/huong-dan','/uoc-tinh','/dich-vu','/gui-do','/tra-cuu','/ve-boxanh','/chinh-sach','/ho-tro','/hop-minh-hoa','/do-cu','/dat-lich'];
+const routes=['/','/tro-ly-ai','/chuyen-tro','/don-phong','/ban-giao','/hop-tai-su-dung','/song-xanh','/huong-dan','/uoc-tinh','/dich-vu','/gui-do','/tra-cuu','/ve-boxanh','/chinh-sach','/ho-tro','/hop-minh-hoa','/do-cu','/dat-lich'];
 try{
   await ready;
   if(path.resolve(output)!==path.join(root,'_site'))throw new Error('Unexpected export target.');

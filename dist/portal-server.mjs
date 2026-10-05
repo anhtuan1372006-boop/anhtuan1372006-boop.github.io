@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { renderToString } from "react-dom/server";
-import { ArrowRight, ArrowUpRight, BookOpen, Camera, Check, CheckCheck, ChevronDownIcon, ChevronRight, ClipboardCheck, KeyRound, MapPin, Package, Pause, Phone, Play, Plus, Recycle, RotateCcw, ScanLine, ShieldCheck, Sparkles, Truck, Volume2, XIcon } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, CalendarDays, Camera, Check, CheckCheck, ChevronDown, ChevronDownIcon, ChevronRight, ChevronUp, ClipboardCheck, Copy, KeyRound, MapPin, Package, Pause, Phone, Play, Plus, Recycle, RotateCcw, ScanLine, Send, ShieldCheck, Sparkles, Square, Truck, Volume2, X, XIcon } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -2004,6 +2004,1388 @@ function QuoteScene({ c, onQuote }) {
 	] });
 }
 //#endregion
+//#region public/assistant-knowledge.js
+var guideTopics = [
+	{
+		id: "overview",
+		title: "BOXANH là gì?",
+		href: "/ve-boxanh",
+		tags: "boxanh vinh nghệ an khu vực sinh viên liên hệ",
+		text: "BOXANH hỗ trợ chuyển trọ, dọn phòng và bàn giao phòng tại Vinh, Nghệ An. Một đầu mối tiếp nhận nhu cầu, khảo sát, thống nhất phạm vi và chi phí. Hộp được thu hồi để dùng lại; đồ thừa có ba phương án riêng. Dự án đang thử nghiệm, lịch và địa chỉ phục vụ phải được xác nhận riêng. Chưa công bố đội xe, số đơn hoàn tất hoặc đánh giá khách hàng đã kiểm chứng."
+	},
+	{
+		id: "services",
+		title: "Chọn dịch vụ phù hợp",
+		href: "/dich-vu#so-sanh",
+		tags: "dịch vụ gọn nhẹ trọn gói thuê hộp so sánh đóng gói",
+		text: "Gọn nhẹ: khách tự đóng đồ, BOXANH hỗ trợ vận chuyển theo phạm vi thống nhất. Trọn gói: có hỗ trợ đóng gói, vận chuyển và tiếp nhận nhu cầu xử lý đồ thừa. Chỉ thuê hộp: dành cho người đã có phương tiện, gồm hộp và việc giao/thu hồi theo khảo sát. Dọn phòng và bàn giao phòng được báo giá sau khảo sát. Bảng so sánh có lựa chọn chỉ xem điểm khác biệt. Chọn gói sẽ mở biểu mẫu với dịch vụ đã chọn."
+	},
+	{
+		id: "moving",
+		title: "Chuyển trọ từ A đến B",
+		href: "/chuyen-tro",
+		tags: "chuyển trọ chuyển đồ vận chuyển quy trình khảo sát",
+		text: "Bốn phần trên trang chuyển trọ: Chốt phương án, Sắp xếp đồ, Chuyển đến nơi và Khép hành trình. Có lựa chọn từng giai đoạn, công cụ ước tính, thông tin ba gói và lối vào danh sách chuẩn bị. Quy trình dự kiến: gửi nhu cầu → khảo sát → báo giá → xác nhận lịch → giao hộp → đóng đồ → chuyển đồ → kiểm đếm → thu hồi hộp. Nhân sự cập nhật trạng thái thực tế; gửi yêu cầu chưa xác nhận đội vận chuyển."
+	},
+	{
+		id: "cleaning",
+		title: "Dọn phòng cũ hoặc mới",
+		href: "/don-phong",
+		tags: "dọn phòng vệ sinh bếp nhà vệ sinh diện tích",
+		text: "Trang có ba lựa chọn Phòng ở, Bếp và vệ sinh, Phòng mới, mỗi lựa chọn hiển thị phạm vi công việc. Quy trình: gửi hiện trạng → thống nhất phạm vi → kiểm tra sau thực hiện. Biểu mẫu khảo sát nhận diện tích 1–500 m², địa chỉ, ngày, khung giờ, mô tả và tối đa bốn ảnh. Không có giá cố định cho mọi phòng. Sửa chữa, chờ, ngoài giờ và thêm người phải được khảo sát, thỏa thuận riêng."
+	},
+	{
+		id: "handover",
+		title: "Chuẩn bị bàn giao phòng",
+		href: "/ban-giao",
+		tags: "bàn giao trả phòng chìa khóa điện nước tiền cọc",
+		text: "Danh sách năm mục tương tác: ảnh hiện trạng, nội thất/vật dụng, chỉ số điện nước, khoản cần đối soát, chìa khóa và lịch hẹn. Bộ đếm phản ánh việc đánh dấu; danh sách này chỉ ở phiên trên màn hình, chưa tạo biên bản điện tử. Gửi khảo sát bàn giao qua biểu mẫu riêng. Tiền thuê/cọc và thỏa thuận do khách với chủ trọ đối soát; BOXANH hỗ trợ ghi nhận hiện trạng, kiểm tra và thống nhất việc cần làm."
+	},
+	{
+		id: "boxes",
+		title: "Hộp tái sử dụng",
+		href: "/hop-tai-su-dung",
+		tags: "hộp thùng nhựa carton vệ sinh thu hồi thuê gia hạn vòng đời",
+		text: "Trang có bốn giai đoạn và sáu trạng thái vòng đời để bấm đọc: sẵn sàng, đã giao, đang dùng, thu hồi, vệ sinh, dùng tiếp. Dự kiến giao hộp trước ngày chuyển 1–2 ngày; hẹn thu hồi sau lấy đồ ra, kiểm đếm và vệ sinh. Thời gian thuê và gia hạn dùng cấu hình hiện tại. Giữ hộp sạch, khô; kiểm đếm và thống nhất tải trọng. QR từng hộp và lịch sử quét chưa triển khai thật."
+	},
+	{
+		id: "surplus",
+		title: "Đồ không mang theo",
+		href: "/song-xanh",
+		tags: "đồ thừa đồ cũ bán thu mua ký gửi phân loại tái chế hỏng",
+		text: "Ba phương án có nội dung và nút gửi đồ riêng. Thu mua: thẩm định → đồng ý giá → tiếp nhận thực tế; phần được phân bổ hợp lệ mới trừ vào phí đơn liên kết. Ký gửi: thanh toán sau khi bán được, không trừ trước phí chuyển và không bảo đảm bán được. Phân loại/thu gom: chỉ nhận khi xác nhận đầu ra phù hợp, không cam kết mọi đồ hỏng được tái chế. Pin, hóa chất, rác nguy hại và vật sắc nhọn cần kênh chuyên biệt."
+	},
+	{
+		id: "quote",
+		title: "Ước tính chi phí",
+		href: "/uoc-tinh",
+		tags: "giá báo giá phí bao nhiêu chi phí km tầng cầu thang cồng kềnh",
+		text: "Công cụ có Chuyển trọ, Dọn phòng, Bàn giao. Chọn Gọn nhẹ/Trọn gói/Chỉ thuê hộp; nhập 1–60 hộp và 1–80 km. Giá thay đổi theo cấu hình hiện hành. Gói chuyển bao gồm 10 hộp và 5 km đầu; phụ phí có hộp thêm, quãng đường thêm, tầng không có thang máy, đồ cồng kềnh và hỗ trợ đóng gói cho Gọn nhẹ. Dọn/bàn giao cần khảo sát. Ước tính chưa tạo đơn, chưa giữ lịch, chưa thanh toán; nút Nhận báo giá chuyển lựa chọn sang biểu mẫu."
+	},
+	{
+		id: "fees",
+		title: "Phụ phí và điều kiện",
+		href: "/dich-vu#phu-phi",
+		tags: "phụ phí giá tầng thang máy đồ lớn km chờ ngoài giờ",
+		text: "Bảng phụ phí và ví dụ giá dùng cấu hình hiện tại. Phí cầu thang tính tổng tầng nơi đi/nơi đến không có thang máy; tầng trệt là 0. Phí cồng kềnh tính theo món. Chờ, thêm nhân sự, tháo lắp, ngoài giờ và điều kiện tiếp cận đặc biệt cần khảo sát riêng. Mọi khoản bổ sung phải thống nhất trước thực hiện. Hỏng/mất hộp, tiền cọc, gia hạn và tải trọng phải xác nhận trước sử dụng."
+	},
+	{
+		id: "booking",
+		title: "Đặt lịch trong bốn bước",
+		href: "/dat-lich",
+		tags: "đặt lịch đặt dịch vụ đặt xe đăng ký hẹn đặt hộp ngày giờ",
+		text: "Chuyển đồ/thuê hộp có bốn bước: (1) chọn gói, 1–60 hộp, 0–30 đồ cồng kềnh và đóng gói; (2) địa chỉ, ngày không quá khứ và không quá 12 tháng, quãng đường, tầng 0–15 và thang máy từng nơi; (3) phương án đồ thừa, mô tả và ảnh; (4) liên hệ, ghi chú, xem lại và đồng ý xử lý dữ liệu rồi Gửi yêu cầu báo giá. Có Tiếp tục và Quay lại, kiểm tra lỗi từng bước, bảng giá dự kiến cập nhật. AI chỉ chuẩn bị bản nháp; khách phải xác nhận trên biểu mẫu."
+	},
+	{
+		id: "survey",
+		title: "Đặt khảo sát dọn/bàn giao",
+		href: "/dat-lich?goi=cleaning",
+		tags: "khảo sát dọn vệ sinh bàn giao diện tích yêu cầu phòng",
+		text: "Dọn phòng và Bàn giao sử dụng một biểu mẫu khảo sát thay cho bốn bước chuyển đồ. Nhập địa chỉ, diện tích 1–500 m², ngày, khung giờ, họ tên, điện thoại, mô tả bắt buộc và ảnh nếu cần. Nhận mã BX khi gửi hợp lệ; không giữ hộp trong kho. Ba khung giờ mong muốn: sáng 08:00–12:00, chiều 13:00–17:00, tối 17:00–20:00. Lịch và giá thực hiện chỉ được chốt sau nhân sự liên hệ."
+	},
+	{
+		id: "photos",
+		title: "Ảnh và thông tin biểu mẫu",
+		href: "/dat-lich",
+		tags: "ảnh tải ảnh xóa ảnh jpg png webp dung lượng điện thoại dữ liệu riêng tư",
+		text: "Các biểu mẫu khảo sát, đồ thừa và sự cố nhận tối đa bốn ảnh JPG, PNG hoặc WebP, mỗi ảnh tối đa 2 MB. Có xem trước và bỏ ảnh trước khi gửi. Ảnh khảo sát/sự cố là ảnh riêng, chỉ nhân sự có quyền được xem. Khi gửi lỗi kết nối, biểu mẫu giữ thông tin để thử lại. Điện thoại Việt Nam được kiểm tra; cần đồng ý xử lý dữ liệu. Bản nháp giữ trong phiên, không cam kết phục hồi sau đóng/tải lại trình duyệt."
+	},
+	{
+		id: "goods",
+		title: "Gửi đồ để thẩm định",
+		href: "/gui-do",
+		tags: "gửi đồ hồ sơ định giá thu mua ký gửi ảnh tình trạng liên kết",
+		text: "Chọn Thu mua/Ký gửi/Phân loại và thu gom, nhóm Nội thất/Đồ điện/Sách/Quần áo/Đồ khác, tình trạng và mô tả tối đa 2.000 ký tự. Có thể liên kết mã BX cùng số điện thoại; tối đa bốn ảnh và đồng ý liên hệ. Gửi hợp lệ nhận mã DG, sao chép và tra cứu được. Đồ đánh dấu hỏng không đi vào thu mua/ký gửi. Thu mua mới giảm phí khi đã tiếp nhận và phân bổ hợp lệ; thẩm định cần nhân sự, không tự định giá từ ảnh."
+	},
+	{
+		id: "market",
+		title: "Xem và quan tâm đồ cũ",
+		href: "/do-cu",
+		tags: "mua đồ cửa hàng sách quạt bàn ghế tìm lọc đồ cũ",
+		text: "Sáu bộ lọc nhóm và tìm theo tên/mô tả. Thẻ có ảnh, tên, giá, tình trạng, nút xem. Khi chưa có hàng thật, chỉ là bộ sưu tập ý tưởng có nhãn tham khảo, chưa mở bán. Với hàng thật khả dụng, cửa sổ chi tiết hiện ảnh, mô tả, lỗi, điều kiện giao nhận; nhập họ tên/điện thoại và đồng ý để đăng ký quan tâm nhận mã MH. Có đóng, Escape. Quan tâm chưa giữ hàng, chưa thanh toán; nhân sự liên hệ xác nhận."
+	},
+	{
+		id: "tracking",
+		title: "Tra cứu bốn loại hồ sơ",
+		href: "/tra-cuu",
+		tags: "tra cứu tiến độ mã đơn bx dg mh sc trạng thái theo dõi",
+		text: "Nhập đúng mã và đúng số điện thoại đã đăng ký rồi Xem tiến độ. BX: loại dịch vụ, ngày, giá dự kiến/chốt, giảm phí hợp lệ và dòng thời gian. DG: phương án, tình trạng, nhóm đồ, định giá và tiền đã ghi nhận. MH: món quan tâm và trạng thái. SC: sự cố và phản hồi CSKH. Không hiện ảnh riêng, địa chỉ đầy đủ hoặc ghi chú nội bộ. Không phải GPS; trạng thái cần vận hành cập nhật. Gửi thành công có sao chép mã và nút tra cứu điền trước mã."
+	},
+	{
+		id: "support",
+		title: "CSKH và báo sự cố",
+		href: "/ho-tro",
+		tags: "hỗ trợ sự cố mất đồ hỏng đồ tem niêm phong bồi thường bảo hiểm",
+		text: "Nhập mã BX và điện thoại của đơn, chọn Không tìm thấy đồ/Tem niêm phong bất thường/Đồ bị hư hỏng/Vấn đề hộp/Vấn đề khác. Mã hộp và tem nếu có, mô tả 10–2.000 ký tự, tối đa bốn ảnh, đồng ý xử lý dữ liệu. Nhận mã SC để sao chép/tra cứu. Giữ hộp, tem, ảnh và bằng chứng; nhân sự đối chiếu và phản hồi. Website không tự kết luận trách nhiệm hoặc bồi thường; chưa công bố gói bảo hiểm/mức bồi thường cố định."
+	},
+	{
+		id: "guide",
+		title: "Video và cách dùng website",
+		href: "/huong-dan#video-huong-dan",
+		tags: "video hướng dẫn chức năng cách dùng website xem phim phụ đề",
+		text: "Trung tâm hướng dẫn có mục lục bấm đến video, danh sách chuẩn bị, FAQ và bắt đầu yêu cầu. Video v10 khoảng 2 phút 12 giây, 13 chương, thuyết minh và phụ đề tiếng Việt, các màn hình website thật. Phát/tạm dừng, tua, âm lượng, toàn màn hình tùy trình duyệt; tải MP4. Không tự bật tiếng. Trang chủ có video và lối vào trung tâm hướng dẫn."
+	},
+	{
+		id: "preparation",
+		title: "Chuẩn bị ngày chuyển",
+		href: "/huong-dan#checklist",
+		tags: "chuẩn bị checklist đánh dấu sách đóng đồ lưu danh sách",
+		text: "Sáu việc: chốt ngày/báo chủ trọ; phân đồ; giữ giấy tờ/đồ quý; chụp hiện trạng; ghi nhóm/kiểm đếm hộp; chuẩn bị lối đi/thang máy/đỗ xe. Đánh dấu cập nhật bộ đếm và lưu trên thiết bị. Trang Dịch vụ có danh sách riêng với Bắt đầu lại; hai danh sách không đồng bộ với nhau hay giữa thiết bị. Có ba thẻ đọc cách đóng hộp, phụ phí, xử lý bất thường và bảy FAQ mở/đóng."
+	},
+	{
+		id: "policy",
+		title: "Chính sách và quyền riêng tư",
+		href: "/chinh-sach",
+		tags: "chính sách quy định quyền riêng tư thay đổi hủy dữ liệu",
+		text: "Chính sách hiện là nguyên tắc vận hành dự kiến, cần hoàn thiện trước kinh doanh chính thức. Gồm tiếp nhận/xác nhận, báo giá/thanh toán, hộp/giao nhận, thu mua/ký gửi, thu gom, thay đổi/hủy, sự cố, quyền riêng tư và ảnh tham khảo. Chưa có tự hủy/sửa lịch sau gửi hoặc tải/xóa toàn bộ hồ sơ bởi khách; liên hệ BOXANH để xử lý. Trò chuyện AI cần đồng ý gửi nội dung tới OpenAI; không gửi mật khẩu, OTP hay thông tin thanh toán."
+	},
+	{
+		id: "qr",
+		title: "Thẻ hộp minh họa",
+		href: "/hop-minh-hoa",
+		tags: "qr mã hộp tem quét thẻ minh họa",
+		text: "Thẻ hiện mã hộp/đơn/ngày/số hộp/trạng thái mẫu với nhãn minh họa. Bốn bước kiểm tra: đối chiếu mã, kiểm tra tem, chụp bất thường và giữ hộp, lấy đồ rồi giữ hộp để thu hồi. Có nút báo vấn đề dẫn sang hỗ trợ. Chưa nối hộp hoặc lịch sử quét thật, chưa quét camera, chưa định vị. Không công khai đồ trong hộp hoặc thông tin liên hệ khách."
+	},
+	{
+		id: "navigation",
+		title: "Di chuyển giữa các trang",
+		href: "/",
+		tags: "trang chủ menu quay lại điện thoại giao diện nút đường dẫn",
+		text: "Logo về trang chủ; điều hướng có dịch vụ, đồ thừa, hướng dẫn, tra cứu, hỗ trợ và nhận báo giá. Menu dịch vụ có danh sách trang; menu điện thoại có nút mở/đóng. Trang con có Quay lại theo lịch sử và Trang chủ. Các thẻ có mũi tên và hiệu ứng để biết có thể bấm. Bố cục thích ứng điện thoại; thanh thao tác nhanh có gọi và nhận báo giá. Gọi điện mở ứng dụng gọi, chưa có chat Zalo tích hợp."
+	},
+	{
+		id: "mascot",
+		title: "Nhân vật và robot Bơ",
+		href: "/",
+		tags: "robot bơ nhân vật chuyển động lời chào âm thanh ai trò chuyện",
+		text: "Nhân vật vận chuyển trên trang chủ là hình minh họa thương hiệu, tự chuyển động nhẹ; có tạm dừng và nghe/dừng lời chào. Âm thanh không tự phát, dừng nguồn khác để tránh chồng tiếng. Robot Bơ màu tím/cam là lối mở phòng trò chuyện riêng /tro-ly-ai. Chuyển động tôn trọng lựa chọn giảm chuyển động. AI tạo câu trả lời chỉ hoạt động khi máy chủ đã cấu hình API; cẩm nang vẫn dùng được khi AI chưa bật."
+	},
+	{
+		id: "operations",
+		title: "Nhân sự tiếp nhận và vận hành",
+		href: "/ho-tro",
+		tags: "quản trị vận hành kho đối tác trạng thái csv nhân viên",
+		text: "Nhân sự có cổng quản trị riêng để xử lý đơn/báo giá/trạng thái, giao/thu hồi và số lượng hộp, thẩm định đồ/giảm phí, danh mục hàng, khách quan tâm, sự cố, cấu hình giá/liên hệ, nhật ký và xuất đơn CSV. Nội dung QR/đối tác là kế hoạch hướng dẫn, chưa quản lý hoặc quét thật. Khách không truy cập quản trị qua GitHub Pages. AI không đọc hồ sơ khách khác, không sửa kho, không quyết định bồi thường và không tự xác nhận lịch."
+	},
+	{
+		id: "availability",
+		title: "Giới hạn và liên hệ nhân sự",
+		href: "/ho-tro",
+		tags: "online lỗi kết nối thanh toán gps chatbot không hoạt động liên hệ",
+		text: "GitHub Pages phục vụ giao diện; đặt yêu cầu, tra cứu, danh mục thật và AI cần máy chủ dữ liệu đang chạy. Chưa có thanh toán trực tuyến, giỏ hàng, SMS/email/Zalo tự động, GPS, tài khoản khách hoặc lịch trống theo thời gian thực. Khi mất kết nối, thử lại hoặc gọi BOXANH; không coi lỗi là đã nhận đơn. AI chưa bật sẽ được ghi rõ; trả lời từ cẩm nang không phải câu trả lời do mô hình AI tạo."
+	}
+];
+var serviceNames = {
+	small: "Gọn nhẹ",
+	full: "Trọn gói",
+	boxes: "Chỉ thuê hộp",
+	cleaning: "Dọn phòng",
+	handover: "Bàn giao phòng"
+};
+var moneyVND = (n) => new Intl.NumberFormat("vi-VN", {
+	style: "currency",
+	currency: "VND",
+	maximumFractionDigits: 0
+}).format(n || 0);
+function normalize(s) {
+	return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/đ/g, "d");
+}
+function lookupGuide(query) {
+	const q = normalize(query), tokens = q.split(/[^a-z0-9]+/).filter((w) => w.length > 2 && ![
+		"minh",
+		"ban",
+		"toi",
+		"muon",
+		"giup",
+		"nao",
+		"duoc",
+		"nhung",
+		"nhu",
+		"the",
+		"voi",
+		"nay",
+		"khong",
+		"cho",
+		"mot",
+		"cac",
+		"ngay",
+		"co",
+		"phi",
+		"cua"
+	].includes(w));
+	const intent = [
+		["ky gui", "surplus"],
+		["thu mua", "surplus"],
+		["do hong", "surplus"],
+		["tra cuu", "tracking"],
+		["dat lich", "booking"],
+		["tai anh", "photos"],
+		["bao gia", "quote"],
+		["chi phi", "quote"],
+		["huong dan", "guide"],
+		["mat do", "support"],
+		["su co", "support"]
+	].filter(([phrase]) => q.includes(phrase));
+	return guideTopics.map((t) => {
+		const title = normalize(t.title), tags = new Set(normalize(t.tags).split(/[^a-z0-9]+/)), body = normalize(t.text);
+		return {
+			topic: t,
+			score: tokens.reduce((n, w) => n + (title.split(/[^a-z0-9]+/).includes(w) ? 5 : tags.has(w) ? 3 : body.split(/[^a-z0-9]+/).includes(w) ? 1 : 0), 0) + intent.filter(([, id]) => id === t.id).length * 30
+		};
+	}).filter((x) => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 1).map((x) => x.topic);
+}
+function guideReply(query, c) {
+	if (/^(xin chào|chào|hello|hi)[!. ]*$/i.test(query.trim())) return {
+		text: "Chào bạn, mình là Bơ. Cẩm nang BOXANH có thể giúp bạn chọn dịch vụ, tìm hướng dẫn và chuẩn bị yêu cầu. Bạn đang muốn chuyển trọ, dọn phòng hay xử lý đồ không mang theo?",
+		links: guideTopics.filter((t) => [
+			"services",
+			"booking",
+			"guide"
+		].includes(t.id))
+	};
+	const found = lookupGuide(query);
+	if (!found.length) return {
+		text: "Mình chưa tìm thấy nội dung phù hợp trong cẩm nang. Bạn thử chọn một chủ đề bên dưới hoặc gọi " + c.phone + " để đội BOXANH tư vấn trực tiếp nhé.",
+		links: guideTopics.filter((t) => [
+			"services",
+			"booking",
+			"support"
+		].includes(t.id))
+	};
+	let text = found.map((t) => t.title + "\n" + t.text).join("\n\n");
+	if (found.some((t) => [
+		"services",
+		"quote",
+		"fees"
+	].includes(t.id))) text += "\n\nGiá tham khảo hiện tại: Gọn nhẹ " + moneyVND(c.smallBase) + "; Trọn gói " + moneyVND(c.fullBase) + "; thuê 10 hộp " + moneyVND(c.boxBase + 10 * c.boxUnit) + ". Dọn/bàn giao cần khảo sát. Giá cuối cùng do BOXANH xác nhận.";
+	return {
+		text,
+		links: found
+	};
+}
+//#endregion
+//#region src/assistant.jsx
+var session = {
+	messages: [],
+	consent: false
+};
+var welcomePrompts = [
+	[
+		"Chọn gói cùng Bơ",
+		"Mình chuyển trọ lần đầu, nên chọn gói nào?",
+		Package
+	],
+	[
+		"Lên kế hoạch chuyển",
+		"Mình muốn chuẩn bị đặt lịch chuyển trọ.",
+		CalendarDays
+	],
+	[
+		"Tìm chỗ cho đồ thừa",
+		"Thu mua và ký gửi đồ cũ khác nhau thế nào?",
+		Recycle
+	],
+	[
+		"Biết ngay cách dùng",
+		"Hướng dẫn mình các chức năng trên website.",
+		BookOpen
+	]
+];
+var uid = () => crypto.randomUUID();
+function BoRobot({ mini = false, paused = false }) {
+	const id = React.useId().replaceAll(":", "");
+	return /* @__PURE__ */ jsx("span", {
+		className: "bo-robot " + (mini ? "bo-mini " : "") + (paused ? "bo-paused" : ""),
+		"aria-hidden": "true",
+		children: /* @__PURE__ */ jsxs("svg", {
+			viewBox: "0 0 220 235",
+			fill: "none",
+			children: [
+				/* @__PURE__ */ jsxs("defs", { children: [
+					/* @__PURE__ */ jsxs("linearGradient", {
+						id: "body" + id,
+						x1: "54",
+						y1: "95",
+						x2: "163",
+						y2: "196",
+						gradientUnits: "userSpaceOnUse",
+						children: [
+							/* @__PURE__ */ jsx("stop", { stopColor: "#b29aff" }),
+							/* @__PURE__ */ jsx("stop", {
+								offset: ".55",
+								stopColor: "#8258e7"
+							}),
+							/* @__PURE__ */ jsx("stop", {
+								offset: "1",
+								stopColor: "#4d2c96"
+							})
+						]
+					}),
+					/* @__PURE__ */ jsxs("linearGradient", {
+						id: "head" + id,
+						x1: "39",
+						y1: "42",
+						x2: "171",
+						y2: "130",
+						gradientUnits: "userSpaceOnUse",
+						children: [
+							/* @__PURE__ */ jsx("stop", { stopColor: "#cdb7ff" }),
+							/* @__PURE__ */ jsx("stop", {
+								offset: ".5",
+								stopColor: "#9572ee"
+							}),
+							/* @__PURE__ */ jsx("stop", {
+								offset: "1",
+								stopColor: "#6641b7"
+							})
+						]
+					}),
+					/* @__PURE__ */ jsxs("linearGradient", {
+						id: "face" + id,
+						x1: "63",
+						y1: "50",
+						x2: "169",
+						y2: "110",
+						gradientUnits: "userSpaceOnUse",
+						children: [/* @__PURE__ */ jsx("stop", { stopColor: "#312553" }), /* @__PURE__ */ jsx("stop", {
+							offset: "1",
+							stopColor: "#171a30"
+						})]
+					})
+				] }),
+				/* @__PURE__ */ jsx("ellipse", {
+					cx: "110",
+					cy: "218",
+					rx: "57",
+					ry: "8",
+					fill: "#3d206c",
+					opacity: ".12"
+				}),
+				/* @__PURE__ */ jsxs("g", {
+					className: "bo-floating",
+					children: [
+						/* @__PURE__ */ jsx("path", {
+							d: "M105 32v-9",
+							stroke: "#7351bd",
+							strokeWidth: "7",
+							strokeLinecap: "round"
+						}),
+						/* @__PURE__ */ jsx("circle", {
+							cx: "105",
+							cy: "16",
+							r: "9",
+							fill: "#ffad68"
+						}),
+						/* @__PURE__ */ jsx("circle", {
+							cx: "102",
+							cy: "13",
+							r: "3",
+							fill: "#fff0d9"
+						}),
+						/* @__PURE__ */ jsx("path", {
+							d: "M62 169v29c0 7 11 11 18 3l12-18M148 169v29c0 7-11 11-18 3l-12-18",
+							stroke: "#7d58c6",
+							strokeWidth: "15",
+							strokeLinecap: "round"
+						}),
+						/* @__PURE__ */ jsx("path", {
+							d: "M76 116c-10 14-17 43-6 62 11 20 63 22 78 1 10-15 1-51-7-63",
+							fill: "url(#body" + id + ")"
+						}),
+						/* @__PURE__ */ jsx("rect", {
+							x: "83",
+							y: "137",
+							width: "43",
+							height: "30",
+							rx: "12",
+							fill: "#fcd3a2"
+						}),
+						/* @__PURE__ */ jsx("path", {
+							d: "M93 153h23M105 145v16",
+							stroke: "#4b3279",
+							strokeWidth: "4",
+							strokeLinecap: "round"
+						}),
+						/* @__PURE__ */ jsx("path", {
+							d: "M59 131c-15 9-22 24-12 39",
+							stroke: "#a586ef",
+							strokeWidth: "17",
+							strokeLinecap: "round"
+						}),
+						/* @__PURE__ */ jsx("circle", {
+							cx: "48",
+							cy: "169",
+							r: "10",
+							fill: "#ffc17e"
+						}),
+						/* @__PURE__ */ jsxs("g", {
+							className: "bo-wave",
+							children: [
+								/* @__PURE__ */ jsx("path", {
+									d: "M146 130c26-4 30-23 27-35",
+									stroke: "#a586ef",
+									strokeWidth: "17",
+									strokeLinecap: "round"
+								}),
+								/* @__PURE__ */ jsx("path", {
+									d: "M169 99c-9-8-8-16-1-19l1-9c0-5 7-5 7 0l1 7c8-6 14-1 11 8l-6 13",
+									fill: "#ffc17e"
+								}),
+								/* @__PURE__ */ jsx("path", {
+									d: "M167 85l7 6",
+									stroke: "#e68f54",
+									strokeWidth: "3",
+									strokeLinecap: "round"
+								})
+							]
+						}),
+						/* @__PURE__ */ jsx("rect", {
+							x: "31",
+							y: "59",
+							width: "14",
+							height: "30",
+							rx: "7",
+							fill: "#6d4cab"
+						}),
+						/* @__PURE__ */ jsx("rect", {
+							x: "163",
+							y: "59",
+							width: "14",
+							height: "30",
+							rx: "7",
+							fill: "#6d4cab"
+						}),
+						/* @__PURE__ */ jsx("rect", {
+							x: "40",
+							y: "34",
+							width: "128",
+							height: "91",
+							rx: "32",
+							fill: "url(#head" + id + ")"
+						}),
+						/* @__PURE__ */ jsx("path", {
+							d: "M55 52c13-13 73-16 92-1",
+							stroke: "#e2d4ff",
+							strokeWidth: "4",
+							strokeLinecap: "round",
+							opacity: ".65"
+						}),
+						/* @__PURE__ */ jsx("rect", {
+							x: "54",
+							y: "51",
+							width: "102",
+							height: "58",
+							rx: "21",
+							fill: "url(#face" + id + ")"
+						}),
+						/* @__PURE__ */ jsx("g", {
+							className: "bo-eyes",
+							children: /* @__PURE__ */ jsx("path", {
+								d: "M72 76c0-8 12-8 12 0M124 76c0-8 12-8 12 0",
+								stroke: "#f8efd9",
+								strokeWidth: "6",
+								strokeLinecap: "round"
+							})
+						}),
+						/* @__PURE__ */ jsx("path", {
+							d: "M91 86c7 8 19 8 26 0",
+							stroke: "#ffbd7e",
+							strokeWidth: "4",
+							strokeLinecap: "round"
+						}),
+						/* @__PURE__ */ jsx("ellipse", {
+							cx: "72",
+							cy: "88",
+							rx: "7",
+							ry: "3",
+							fill: "#ec8faa",
+							opacity: ".7"
+						}),
+						/* @__PURE__ */ jsx("ellipse", {
+							cx: "137",
+							cy: "88",
+							rx: "7",
+							ry: "3",
+							fill: "#ec8faa",
+							opacity: ".7"
+						})
+					]
+				}),
+				/* @__PURE__ */ jsx("g", {
+					className: "bo-spark",
+					children: /* @__PURE__ */ jsx("path", {
+						d: "M190 29v12m-6-6h12M25 123v10m-5-5h10",
+						stroke: "#ed9350",
+						strokeWidth: "3",
+						strokeLinecap: "round"
+					})
+				})
+			]
+		})
+	});
+}
+function AIHomeInvite() {
+	const [paused, setPaused] = useState(false), [visible, setVisible] = useState(true), root = useRef(null);
+	useEffect(() => {
+		const observer = new IntersectionObserver((entries) => setVisible(entries[0].isIntersecting));
+		observer.observe(root.current);
+		return () => observer.disconnect();
+	}, []);
+	return /* @__PURE__ */ jsx("div", {
+		ref: root,
+		className: "bo-home-invite " + (paused || !visible ? "bo-paused" : ""),
+		"data-ai-invite": true,
+		children: /* @__PURE__ */ jsxs("div", {
+			className: "bo-invite-inner",
+			children: [/* @__PURE__ */ jsxs("a", {
+				href: "/tro-ly-ai",
+				className: "bo-invite-link",
+				"aria-label": "Gặp Bơ, mở trang trò chuyện với trợ lý BOXANH",
+				children: [
+					/* @__PURE__ */ jsx(BoRobot, {
+						mini: true,
+						paused: paused || !visible
+					}),
+					/* @__PURE__ */ jsxs("div", { children: [
+						/* @__PURE__ */ jsxs("span", {
+							className: "bo-invite-label",
+							children: [/* @__PURE__ */ jsx(Sparkles, { size: 13 }), " TRỢ LÝ BOXANH"]
+						}),
+						/* @__PURE__ */ jsx("strong", { children: "Chào bạn, mình là Bơ!" }),
+						/* @__PURE__ */ jsx("p", { children: "Chọn dịch vụ, hiểu chi phí, chuẩn bị đặt lịch. Cứ hỏi mình nhé." })
+					] }),
+					/* @__PURE__ */ jsxs("span", {
+						className: "bo-invite-cta",
+						children: ["Trò chuyện cùng Bơ ", /* @__PURE__ */ jsx(ArrowUpRight, { size: 19 })]
+					})
+				]
+			}), /* @__PURE__ */ jsx("button", {
+				type: "button",
+				className: "bo-invite-pause",
+				"aria-label": paused ? "Tiếp tục chuyển động robot" : "Tạm dừng chuyển động robot",
+				onClick: () => setPaused(!paused),
+				children: paused ? /* @__PURE__ */ jsx(Sparkles, { size: 15 }) : /* @__PURE__ */ jsx(Square, { size: 12 })
+			})]
+		})
+	});
+}
+function SafeText({ text }) {
+	return /* @__PURE__ */ jsx("div", {
+		className: "bo-message-text",
+		children: text.split(/\n\n+/).map((p, i) => /* @__PURE__ */ jsx("p", { children: p }, i))
+	});
+}
+function SourceLinks({ links }) {
+	const allowed = new Set(guideTopics.map((t) => t.href));
+	return /* @__PURE__ */ jsx("div", {
+		className: "bo-source-links",
+		children: links.filter((l) => allowed.has(l.href)).map((l) => /* @__PURE__ */ jsxs("a", {
+			href: l.href,
+			children: [l.title, /* @__PURE__ */ jsx(ArrowUpRight, { size: 15 })]
+		}, l.href))
+	});
+}
+function BookingPlanner({ open, onOpenChange, onPrepared, onQuote }) {
+	const [draft, setDraft] = useState({
+		service: "small",
+		boxes: 10,
+		distance: 5,
+		originFloor: 0,
+		destinationFloor: 0,
+		originElevator: false,
+		destinationElevator: false,
+		bulky: 0,
+		packing: false,
+		date: ""
+	}), [loading, setLoading] = useState(false), [error, setError] = useState("");
+	const moving = ["small", "full"].includes(draft.service), today = new Date(Date.now() + 252e5).toISOString().slice(0, 10), lastDay = new Date(Date.now() + 316224e5).toISOString().slice(0, 10);
+	const set = (key, value) => setDraft((d) => ({
+		...d,
+		[key]: value
+	}));
+	const clean = () => Object.fromEntries(Object.entries(draft).filter(([k, v]) => k !== "date" || v));
+	async function prepare(e) {
+		e.preventDefault();
+		setLoading(true);
+		setError("");
+		try {
+			const response = await fetch("/api/quote", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(clean()),
+				signal: AbortSignal.timeout(1e4)
+			});
+			const result = await response.json();
+			if (!response.ok) throw Error(result.error || "Chưa nhận được báo giá.");
+			onPrepared({
+				type: "draft",
+				draft: clean(),
+				quote: result,
+				assumptions: [],
+				bookingCreated: false
+			});
+			onOpenChange(false);
+		} catch {
+			setError("Chưa kết nối được bộ tính giá. Bạn vẫn có thể mở biểu mẫu để điền nhu cầu.");
+		} finally {
+			setLoading(false);
+		}
+	}
+	return /* @__PURE__ */ jsx(Dialog.Root, {
+		open,
+		onOpenChange,
+		children: /* @__PURE__ */ jsxs(Dialog.Portal, { children: [/* @__PURE__ */ jsx(Dialog.Overlay, { className: "bo-modal-overlay" }), /* @__PURE__ */ jsxs(Dialog.Content, {
+			className: "bo-planner-dialog",
+			children: [
+				/* @__PURE__ */ jsx(Dialog.Close, {
+					className: "bo-close-reset",
+					"aria-label": "Đóng kế hoạch",
+					children: /* @__PURE__ */ jsx(X, { size: 19 })
+				}),
+				/* @__PURE__ */ jsx(Dialog.Title, { children: "Chuẩn bị lịch cùng Bơ" }),
+				/* @__PURE__ */ jsx(Dialog.Description, { children: "Chọn nhu cầu và ngày mong muốn. Đây là bản nháp; lịch và giá cần BOXANH xác nhận." }),
+				/* @__PURE__ */ jsxs("form", {
+					onSubmit: prepare,
+					children: [
+						/* @__PURE__ */ jsxs("label", {
+							className: "bo-planner-service",
+							children: ["Dịch vụ", /* @__PURE__ */ jsx("select", {
+								value: draft.service,
+								onChange: (e) => set("service", e.target.value),
+								children: Object.entries(serviceNames).map(([v, label]) => /* @__PURE__ */ jsx("option", {
+									value: v,
+									children: label
+								}, v))
+							})]
+						}),
+						/* @__PURE__ */ jsxs("div", {
+							className: "bo-planner-fields",
+							children: [!["cleaning", "handover"].includes(draft.service) && /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsxs("label", { children: ["Số hộp", /* @__PURE__ */ jsx("input", {
+								type: "number",
+								min: "1",
+								max: "60",
+								required: true,
+								value: draft.boxes,
+								onChange: (e) => set("boxes", e.target.value === "" ? "" : Number(e.target.value))
+							})] }), moving && /* @__PURE__ */ jsxs(Fragment, { children: [
+								/* @__PURE__ */ jsxs("label", { children: ["Quãng đường (km)", /* @__PURE__ */ jsx("input", {
+									type: "number",
+									min: "1",
+									max: "80",
+									required: true,
+									value: draft.distance,
+									onChange: (e) => set("distance", e.target.value === "" ? "" : Number(e.target.value))
+								})] }),
+								/* @__PURE__ */ jsxs("label", { children: ["Tầng nơi đi", /* @__PURE__ */ jsx("input", {
+									type: "number",
+									min: "0",
+									max: "15",
+									required: true,
+									value: draft.originFloor,
+									onChange: (e) => set("originFloor", e.target.value === "" ? "" : Number(e.target.value))
+								})] }),
+								/* @__PURE__ */ jsxs("label", { children: ["Tầng nơi đến", /* @__PURE__ */ jsx("input", {
+									type: "number",
+									min: "0",
+									max: "15",
+									required: true,
+									value: draft.destinationFloor,
+									onChange: (e) => set("destinationFloor", e.target.value === "" ? "" : Number(e.target.value))
+								})] }),
+								/* @__PURE__ */ jsxs("label", { children: ["Đồ cồng kềnh (món)", /* @__PURE__ */ jsx("input", {
+									type: "number",
+									min: "0",
+									max: "30",
+									required: true,
+									value: draft.bulky,
+									onChange: (e) => set("bulky", e.target.value === "" ? "" : Number(e.target.value))
+								})] })
+							] })] }), /* @__PURE__ */ jsxs("label", { children: ["Ngày mong muốn (tùy chọn)", /* @__PURE__ */ jsx("input", {
+								type: "date",
+								min: today,
+								max: lastDay,
+								value: draft.date,
+								onChange: (e) => set("date", e.target.value)
+							})] })]
+						}),
+						moving && /* @__PURE__ */ jsx("div", {
+							className: "bo-planner-checks",
+							children: [
+								["originElevator", "Nơi đi có thang máy"],
+								["destinationElevator", "Nơi đến có thang máy"],
+								...draft.service === "small" ? [["packing", "Cần hỗ trợ đóng gói"]] : []
+							].map(([key, label]) => /* @__PURE__ */ jsxs("label", { children: [/* @__PURE__ */ jsx("input", {
+								type: "checkbox",
+								checked: draft[key],
+								onChange: (e) => set(key, e.target.checked)
+							}), label] }, key))
+						}),
+						error && /* @__PURE__ */ jsx("p", {
+							className: "bo-composer-error",
+							role: "alert",
+							children: error
+						}),
+						/* @__PURE__ */ jsxs("button", {
+							className: "bo-planner-submit",
+							type: "submit",
+							disabled: loading,
+							children: [loading ? "Đang lấy ước tính…" : "Xem bản nháp & chi phí", /* @__PURE__ */ jsx(ArrowRight, { size: 17 })]
+						}),
+						/* @__PURE__ */ jsxs("button", {
+							type: "button",
+							className: "bo-planner-skip",
+							onClick: () => onQuote(clean()),
+							children: ["Mở biểu mẫu đặt lịch ", /* @__PURE__ */ jsx(ArrowUpRight, { size: 14 })]
+						})
+					]
+				})
+			]
+		})] })
+	});
+}
+function DraftCard({ action, onQuote, config: c }) {
+	return /* @__PURE__ */ jsxs("section", {
+		className: "bo-draft-card",
+		children: [
+			/* @__PURE__ */ jsxs("div", {
+				className: "bo-draft-head",
+				children: [
+					/* @__PURE__ */ jsx(CalendarDays, { size: 20 }),
+					/* @__PURE__ */ jsx("strong", { children: action.type === "draft" ? "Kế hoạch bạn vừa chuẩn bị" : "Ước tính cho nhu cầu của bạn" }),
+					/* @__PURE__ */ jsx("span", { children: "Bản nháp" })
+				]
+			}),
+			/* @__PURE__ */ jsx("h3", { children: serviceNames[action.draft.service] }),
+			/* @__PURE__ */ jsxs("div", {
+				className: "bo-draft-data",
+				children: [!action.quote.needsSurvey && /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsxs("span", { children: [action.draft.boxes ?? 10, " hộp"] }), action.draft.service !== "boxes" && /* @__PURE__ */ jsxs("span", { children: [action.draft.distance ?? 5, " km"] })] }), action.draft.date && /* @__PURE__ */ jsx("span", { children: (/* @__PURE__ */ new Date(action.draft.date + "T12:00:00")).toLocaleDateString("vi-VN") })]
+			}),
+			/* @__PURE__ */ jsxs("strong", {
+				className: "bo-draft-price",
+				children: [action.quote.needsSurvey ? "Báo giá sau khảo sát" : moneyVND(action.quote.total), /* @__PURE__ */ jsx("small", { children: action.quote.needsSurvey ? "Cần kiểm tra hiện trạng phòng" : "Dự kiến · chưa phải giá chốt" })]
+			}),
+			action.quote.lines?.length > 0 && /* @__PURE__ */ jsxs("details", { children: [/* @__PURE__ */ jsxs("summary", { children: ["Xem cách tính ", /* @__PURE__ */ jsx(ChevronDown, { size: 15 })] }), action.quote.lines.map((l) => /* @__PURE__ */ jsxs("p", { children: [/* @__PURE__ */ jsx("span", { children: l.label }), /* @__PURE__ */ jsx("b", { children: moneyVND(l.amount) })] }, l.label))] }),
+			action.assumptions?.length > 0 && /* @__PURE__ */ jsxs("p", {
+				className: "bo-assumptions",
+				children: [
+					"Đang tạm tính: ",
+					action.assumptions.join(", "),
+					". Bạn có thể chỉnh lại trên biểu mẫu."
+				]
+			}),
+			/* @__PURE__ */ jsxs("button", {
+				type: "button",
+				onClick: () => onQuote(action.draft),
+				children: ["Kiểm tra & tiếp tục đặt lịch ", /* @__PURE__ */ jsx(ArrowRight, { size: 17 })]
+			}),
+			/* @__PURE__ */ jsx("p", {
+				className: "bo-draft-note",
+				children: "Chưa gửi yêu cầu, chưa giữ lịch. BOXANH xác nhận sau khảo sát và trao đổi."
+			}),
+			c.bookingEnabled === false && /* @__PURE__ */ jsx("p", {
+				role: "status",
+				children: "BOXANH đang tạm ngừng nhận đơn mới. Bạn có thể gọi để trao đổi."
+			})
+		]
+	});
+}
+function Message({ message, onQuote, config }) {
+	const [copied, setCopied] = useState(false);
+	async function copy() {
+		try {
+			await navigator.clipboard.writeText(message.text);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 1800);
+		} catch {
+			setCopied(false);
+		}
+	}
+	return /* @__PURE__ */ jsxs("article", {
+		className: "bo-message bo-from-" + message.role,
+		"aria-label": message.role === "user" ? "Tin nhắn của bạn" : "Câu trả lời của Bơ",
+		children: [
+			message.role === "assistant" && /* @__PURE__ */ jsxs("div", {
+				className: "bo-message-identity",
+				children: [
+					/* @__PURE__ */ jsx(BoRobot, {
+						mini: true,
+						paused: true
+					}),
+					/* @__PURE__ */ jsx("strong", { children: "Bơ" }),
+					/* @__PURE__ */ jsx("span", { children: message.mode === "guide" ? "Từ cẩm nang BOXANH" : "Trợ lý AI" })
+				]
+			}),
+			/* @__PURE__ */ jsxs("div", {
+				className: "bo-bubble",
+				children: [
+					/* @__PURE__ */ jsx(SafeText, { text: message.text }),
+					message.pending && /* @__PURE__ */ jsxs("span", {
+						className: "bo-typing",
+						"aria-label": "Bơ đang trả lời",
+						children: [
+							/* @__PURE__ */ jsx("i", {}),
+							/* @__PURE__ */ jsx("i", {}),
+							/* @__PURE__ */ jsx("i", {})
+						]
+					}),
+					message.error && /* @__PURE__ */ jsx("p", {
+						className: "bo-message-error",
+						role: "alert",
+						children: message.error
+					}),
+					message.links && /* @__PURE__ */ jsx(SourceLinks, { links: message.links }),
+					/* @__PURE__ */ jsxs("div", {
+						className: "bo-action-stack",
+						children: [message.actions?.filter((a) => ["draft", "quote"].includes(a.type)).map((a, i) => /* @__PURE__ */ jsx(DraftCard, {
+							action: a,
+							onQuote,
+							config
+						}, i)), message.actions?.filter((a) => a.type === "links").map((a, i) => /* @__PURE__ */ jsx(SourceLinks, { links: a.links || [] }, "l" + i))]
+					})
+				]
+			}),
+			message.role === "assistant" && message.text && !message.pending && /* @__PURE__ */ jsxs("button", {
+				className: "bo-copy",
+				type: "button",
+				onClick: copy,
+				children: [
+					copied ? /* @__PURE__ */ jsx(Check, { size: 13 }) : /* @__PURE__ */ jsx(Copy, { size: 13 }),
+					" ",
+					copied ? "Đã sao chép" : "Sao chép"
+				]
+			})
+		]
+	});
+}
+function AssistantPage({ config: c, onQuote }) {
+	const [messages, setMessages] = useState(() => session.messages), [input, setInput] = useState(""), [status, setStatus] = useState({
+		ready: false,
+		loading: true
+	}), [consent, setConsent] = useState(session.consent), [busy, setBusy] = useState(false), [open, setOpen] = useState(false), [error, setError] = useState(""), [resetOpen, setResetOpen] = useState(false), [plannerOpen, setPlannerOpen] = useState(false);
+	const scroll = useRef(null), abort = useRef(null), inputRef = useRef(null), stick = useRef(true);
+	useEffect(() => {
+		const controller = new AbortController();
+		fetch("/api/assistant/status", { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(5e3)]) }).then((r) => {
+			if (!r.ok) throw Error();
+			return r.json();
+		}).then((s) => setStatus({
+			...s,
+			loading: false
+		})).catch((e) => {
+			if (!controller.signal.aborted) setStatus({
+				ready: false,
+				loading: false,
+				offline: true
+			});
+		});
+		return () => {
+			controller.abort();
+			abort.current?.abort();
+		};
+	}, []);
+	useEffect(() => {
+		session.messages = messages;
+		if (stick.current && scroll.current) scroll.current.scrollTop = messages.length ? scroll.current.scrollHeight : 0;
+	}, [messages, busy]);
+	function update(id, change) {
+		setMessages((m) => m.map((x) => x.id === id ? {
+			...x,
+			...typeof change === "function" ? change(x) : change
+		} : x));
+	}
+	function showTopic(t) {
+		stick.current = true;
+		setOpen(false);
+		setMessages((m) => [...m, {
+			id: uid(),
+			role: "assistant",
+			mode: "guide",
+			text: t.title + "\n" + t.text,
+			links: [t]
+		}]);
+	}
+	async function send(text) {
+		const content = text.trim();
+		if (busy || !content) return;
+		if (content.length > 1800) {
+			setError("Mỗi tin nhắn tối đa 1.800 ký tự.");
+			return;
+		}
+		if (status.loading) {
+			setError("Đang kiểm tra kết nối, bạn thử lại sau một chút nhé.");
+			return;
+		}
+		if (status.ready && !consent) {
+			setError("Đánh dấu đồng ý gửi nội dung đến AI trước khi trò chuyện.");
+			return;
+		}
+		setError("");
+		setInput("");
+		setOpen(false);
+		stick.current = true;
+		const user = {
+			id: uid(),
+			role: "user",
+			text: content
+		}, replyId = uid();
+		if (!status.ready) {
+			const r = guideReply(content, c);
+			setMessages((m) => [
+				...m,
+				user,
+				{
+					id: replyId,
+					role: "assistant",
+					mode: "guide",
+					text: r.text,
+					links: r.links
+				}
+			]);
+			return;
+		}
+		setMessages((m) => [
+			...m,
+			user,
+			{
+				id: replyId,
+				role: "assistant",
+				mode: "ai",
+				text: "",
+				pending: true,
+				actions: []
+			}
+		]);
+		setBusy(true);
+		const controller = new AbortController();
+		abort.current = controller;
+		try {
+			const history = [];
+			let chars = 0;
+			for (const m of [...messages.filter((m) => m.text && !m.error && m.mode !== "guide"), user].slice(-12).reverse()) {
+				const content = m.text.slice(0, 3e3);
+				if (chars + content.length > 16e3) break;
+				chars += content.length;
+				history.unshift({
+					role: m.role,
+					content
+				});
+			}
+			const response = await fetch("/api/assistant/chat", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					messages: history,
+					consent: true
+				}),
+				signal: controller.signal
+			});
+			if (!response.ok) {
+				const b = await response.json();
+				throw Error(b.error || "Chưa kết nối được Bơ.");
+			}
+			if (!response.body) throw Error("Chưa nhận được câu trả lời.");
+			const reader = response.body.getReader(), decoder = new TextDecoder();
+			let buffer = "", finished = false;
+			try {
+				while (true) {
+					const { value, done } = await reader.read();
+					if (done) break;
+					buffer += decoder.decode(value, { stream: true });
+					let pos;
+					while ((pos = buffer.indexOf("\n\n")) >= 0) {
+						const frame = buffer.slice(0, pos);
+						buffer = buffer.slice(pos + 2);
+						const data = frame.split("\n").find((l) => l.startsWith("data:"));
+						if (!data) continue;
+						const e = JSON.parse(data.slice(5));
+						if (e.type === "delta") update(replyId, (m) => ({ text: m.text + e.text }));
+						else if (e.type === "action") update(replyId, (m) => ({ actions: [...m.actions, e.action] }));
+						else if (e.type === "done") {
+							finished = true;
+							update(replyId, {
+								text: e.text,
+								pending: false,
+								actions: e.actions
+							});
+						} else if (e.type === "error") throw Error(e.message);
+					}
+				}
+			} finally {
+				reader.releaseLock();
+			}
+			if (!finished) throw Error("Câu trả lời bị gián đoạn. Bạn có thể gửi lại câu hỏi.");
+		} catch (e) {
+			update(replyId, {
+				pending: false,
+				error: e.name === "AbortError" ? "Đã dừng câu trả lời." : e.message
+			});
+		} finally {
+			setBusy(false);
+			abort.current = null;
+		}
+	}
+	function prepared(action) {
+		stick.current = true;
+		setOpen(false);
+		setMessages((m) => [...m, {
+			id: uid(),
+			role: "assistant",
+			mode: "guide",
+			text: "Đây là bản nháp nhu cầu của bạn. Kiểm tra thông tin bên dưới rồi tiếp tục trên biểu mẫu đặt lịch.",
+			actions: [action]
+		}]);
+	}
+	function newChat() {
+		abort.current?.abort();
+		setMessages([]);
+		session.messages = [];
+		setInput("");
+		setError("");
+		setResetOpen(false);
+		stick.current = true;
+	}
+	return /* @__PURE__ */ jsxs("div", {
+		className: "bo-chat-page",
+		"data-assistant-page": true,
+		children: [
+			/* @__PURE__ */ jsxs("header", {
+				className: "bo-chat-header",
+				children: [
+					/* @__PURE__ */ jsxs("a", {
+						className: "bo-chat-back",
+						href: "/",
+						"aria-label": "Về trang chủ BOXANH",
+						children: [/* @__PURE__ */ jsx(ArrowLeft, { size: 18 }), /* @__PURE__ */ jsx("span", { children: "BOXANH" })]
+					}),
+					/* @__PURE__ */ jsxs("div", {
+						className: "bo-chat-brand",
+						children: [
+							/* @__PURE__ */ jsx("span", {
+								className: "bo-brand-star",
+								children: /* @__PURE__ */ jsx(Sparkles, { size: 16 })
+							}),
+							/* @__PURE__ */ jsx("strong", { children: "Bơ" }),
+							/* @__PURE__ */ jsx("span", { children: "Phòng trò chuyện" })
+						]
+					}),
+					/* @__PURE__ */ jsxs("a", {
+						className: "bo-header-call",
+						href: "tel:" + c.phone,
+						children: [/* @__PURE__ */ jsx(Phone, { size: 16 }), /* @__PURE__ */ jsx("span", { children: "Gặp đội BOXANH" })]
+					})
+				]
+			}),
+			/* @__PURE__ */ jsxs("div", {
+				className: "bo-chat-layout",
+				children: [/* @__PURE__ */ jsxs("aside", {
+					className: "bo-sidebar " + (open ? "bo-sidebar-open" : ""),
+					children: [/* @__PURE__ */ jsxs("button", {
+						type: "button",
+						className: "bo-sidebar-toggle",
+						onClick: () => setOpen(!open),
+						"aria-expanded": open,
+						children: [
+							/* @__PURE__ */ jsx(BookOpen, { size: 17 }),
+							" Lối tắt & cẩm nang ",
+							open ? /* @__PURE__ */ jsx(ChevronUp, { size: 17 }) : /* @__PURE__ */ jsx(ChevronDown, { size: 17 })
+						]
+					}), /* @__PURE__ */ jsxs("div", {
+						className: "bo-sidebar-content",
+						children: [
+							/* @__PURE__ */ jsxs("div", {
+								className: "bo-sidebar-title",
+								children: [
+									/* @__PURE__ */ jsx("span", { children: "NGƯỜI BẠN CHUYỂN TRỌ" }),
+									/* @__PURE__ */ jsxs("h2", { children: [
+										"Hỏi một chút.",
+										/* @__PURE__ */ jsx("br", {}),
+										"Nhẹ cả hành trình."
+									] }),
+									/* @__PURE__ */ jsx("p", { children: "Chọn điều bạn cần. Bơ giúp bạn tìm đúng nơi để bắt đầu." })
+								]
+							}),
+							/* @__PURE__ */ jsxs("button", {
+								type: "button",
+								className: "bo-new-chat",
+								onClick: () => messages.length ? setResetOpen(true) : newChat(),
+								disabled: busy,
+								children: [/* @__PURE__ */ jsx(Plus, { size: 17 }), " Cuộc trò chuyện mới"]
+							}),
+							/* @__PURE__ */ jsxs("button", {
+								type: "button",
+								className: "bo-sidebar-plan",
+								onClick: () => {
+									setPlannerOpen(true);
+									setOpen(false);
+								},
+								children: [
+									/* @__PURE__ */ jsx(CalendarDays, { size: 17 }),
+									" Chuẩn bị đặt lịch ",
+									/* @__PURE__ */ jsx(ArrowUpRight, { size: 16 })
+								]
+							}),
+							/* @__PURE__ */ jsx("span", {
+								className: "bo-sidebar-label",
+								children: "BƠ CÓ THỂ GIÚP BẠN"
+							}),
+							/* @__PURE__ */ jsx("nav", {
+								"aria-label": "Chủ đề tư vấn",
+								children: [
+									"services",
+									"quote",
+									"booking",
+									"surplus",
+									"boxes",
+									"tracking",
+									"guide",
+									"support"
+								].map((id) => {
+									const t = guideTopics.find((t) => t.id === id);
+									return /* @__PURE__ */ jsxs("button", {
+										type: "button",
+										onClick: () => showTopic(t),
+										children: [/* @__PURE__ */ jsx("span", { children: t.title }), /* @__PURE__ */ jsx(ArrowUpRight, { size: 15 })]
+									}, id);
+								})
+							}),
+							/* @__PURE__ */ jsxs("details", {
+								className: "bo-all-topics",
+								children: [/* @__PURE__ */ jsxs("summary", { children: ["Tất cả chức năng website ", /* @__PURE__ */ jsx(ChevronDown, { size: 15 })] }), guideTopics.filter((t) => ![
+									"services",
+									"quote",
+									"booking",
+									"surplus",
+									"boxes",
+									"tracking",
+									"guide",
+									"support"
+								].includes(t.id)).map((t) => /* @__PURE__ */ jsxs("button", {
+									type: "button",
+									onClick: () => showTopic(t),
+									children: [t.title, /* @__PURE__ */ jsx(ArrowUpRight, { size: 14 })]
+								}, t.id))]
+							}),
+							/* @__PURE__ */ jsxs("div", {
+								className: "bo-human-card",
+								children: [
+									/* @__PURE__ */ jsxs("span", { children: [/* @__PURE__ */ jsx(ShieldCheck, { size: 18 }), " Cần người hỗ trợ?"] }),
+									/* @__PURE__ */ jsx("p", { children: "Đội BOXANH sẽ xác nhận phạm vi, giá và lịch cùng bạn." }),
+									/* @__PURE__ */ jsxs("a", {
+										href: "tel:" + c.phone,
+										children: [
+											c.phone.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3"),
+											" ",
+											/* @__PURE__ */ jsx(ArrowUpRight, { size: 16 })
+										]
+									})
+								]
+							})
+						]
+					})]
+				}), /* @__PURE__ */ jsxs("section", {
+					className: "bo-conversation",
+					"aria-label": "Trò chuyện với trợ lý BOXANH",
+					children: [
+						/* @__PURE__ */ jsxs("div", {
+							className: "bo-conversation-status",
+							children: [/* @__PURE__ */ jsxs("span", {
+								className: status.ready ? "bo-status-ready" : "bo-status-guide",
+								children: [/* @__PURE__ */ jsx("i", {}), status.loading ? "Đang kiểm tra kết nối" : status.ready ? "AI sẵn sàng hỗ trợ" : "Cẩm nang BOXANH sẵn sàng"]
+							}), /* @__PURE__ */ jsx("span", {
+								className: "bo-status-area",
+								children: "Vinh, Nghệ An"
+							})]
+						}),
+						/* @__PURE__ */ jsx("div", {
+							ref: scroll,
+							className: "bo-chat-scroll",
+							onScroll: () => {
+								const el = scroll.current;
+								stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+							},
+							children: !messages.length ? /* @__PURE__ */ jsxs("div", {
+								className: "bo-welcome",
+								children: [
+									/* @__PURE__ */ jsxs("div", {
+										className: "bo-welcome-robot",
+										children: [/* @__PURE__ */ jsx(BoRobot, {}), /* @__PURE__ */ jsx("span", {
+											className: "bo-hello",
+											children: "Xin chào!"
+										})]
+									}),
+									/* @__PURE__ */ jsx("p", {
+										className: "bo-kicker",
+										children: "MÌNH LÀ BƠ, TRỢ LÝ BOXANH"
+									}),
+									/* @__PURE__ */ jsxs("h1", { children: [
+										"Bạn cần gì,",
+										/* @__PURE__ */ jsx("br", {}),
+										/* @__PURE__ */ jsx("em", { children: "cứ hỏi Bơ." })
+									] }),
+									/* @__PURE__ */ jsxs("p", {
+										className: "bo-welcome-description",
+										children: [
+											"Từ chọn một gói chuyển trọ đến tìm chủ mới cho đồ cũ.",
+											/* @__PURE__ */ jsx("br", {}),
+											"Mình ở đây để giúp bạn bắt đầu dễ hơn."
+										]
+									}),
+									/* @__PURE__ */ jsx("div", {
+										className: "bo-prompt-grid",
+										children: welcomePrompts.map(([title, prompt, Icon]) => /* @__PURE__ */ jsxs("button", {
+											type: "button",
+											onClick: () => title === "Lên kế hoạch chuyển" ? setPlannerOpen(true) : send(prompt),
+											disabled: status.loading,
+											children: [
+												/* @__PURE__ */ jsx(Icon, { size: 21 }),
+												/* @__PURE__ */ jsx("strong", { children: title }),
+												/* @__PURE__ */ jsx("span", { children: prompt }),
+												/* @__PURE__ */ jsx(ArrowUpRight, { size: 17 })
+											]
+										}, title))
+									})
+								]
+							}) : /* @__PURE__ */ jsxs("div", {
+								className: "bo-messages",
+								role: "log",
+								"aria-label": "Lịch sử hội thoại",
+								"aria-relevant": "additions",
+								children: [/* @__PURE__ */ jsx("p", {
+									className: "bo-session-label",
+									children: "CUỘC TRÒ CHUYỆN CỦA BẠN"
+								}), messages.map((message) => /* @__PURE__ */ jsx(Message, {
+									message,
+									onQuote,
+									config: c
+								}, message.id))]
+							})
+						}),
+						/* @__PURE__ */ jsxs("div", {
+							className: "bo-composer-area",
+							children: [
+								!status.loading && !status.ready && /* @__PURE__ */ jsxs("div", {
+									className: "bo-mode-note",
+									children: [/* @__PURE__ */ jsx(BookOpen, { size: 16 }), /* @__PURE__ */ jsxs("p", { children: [
+										/* @__PURE__ */ jsx("strong", { children: "AI hội thoại đang chờ kích hoạt." }),
+										" ",
+										status.offline ? "Máy chủ hiện chưa kết nối. " : "",
+										"Bạn vẫn có thể hỏi cẩm nang, mở chức năng và chuẩn bị đặt lịch."
+									] })]
+								}),
+								status.ready && /* @__PURE__ */ jsxs("label", {
+									className: "bo-ai-consent",
+									children: [/* @__PURE__ */ jsx("input", {
+										type: "checkbox",
+										checked: consent,
+										onChange: (e) => {
+											setConsent(e.target.checked);
+											session.consent = e.target.checked;
+											setError("");
+										}
+									}), /* @__PURE__ */ jsxs("span", { children: ["Tôi đồng ý gửi nội dung trò chuyện tới OpenAI để nhận tư vấn AI. Không nhập mật khẩu, OTP hoặc thông tin thanh toán. ", /* @__PURE__ */ jsx("a", {
+										href: "/chinh-sach#bao-mat",
+										children: "Quyền riêng tư"
+									})] })]
+								}),
+								/* @__PURE__ */ jsxs("form", {
+									className: "bo-composer",
+									onSubmit: (e) => {
+										e.preventDefault();
+										send(input);
+									},
+									children: [
+										/* @__PURE__ */ jsx("label", {
+											className: "sr-only",
+											htmlFor: "bo-chat-input",
+											children: "Câu hỏi dành cho Bơ"
+										}),
+										/* @__PURE__ */ jsx("textarea", {
+											ref: inputRef,
+											id: "bo-chat-input",
+											placeholder: "Hỏi Bơ về dịch vụ, chi phí hoặc cách đặt lịch…",
+											value: input,
+											maxLength: 1800,
+											rows: 2,
+											onChange: (e) => setInput(e.target.value),
+											onKeyDown: (e) => {
+												if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+													e.preventDefault();
+													send(input);
+												}
+											}
+										}),
+										busy ? /* @__PURE__ */ jsx("button", {
+											type: "button",
+											className: "bo-send",
+											"aria-label": "Dừng câu trả lời",
+											onClick: () => abort.current?.abort(),
+											children: /* @__PURE__ */ jsx(Square, { size: 16 })
+										}) : /* @__PURE__ */ jsx("button", {
+											type: "submit",
+											className: "bo-send",
+											"aria-label": "Gửi câu hỏi",
+											disabled: !input.trim() || status.loading,
+											children: /* @__PURE__ */ jsx(Send, { size: 19 })
+										})
+									]
+								}),
+								error && /* @__PURE__ */ jsx("p", {
+									className: "bo-composer-error",
+									role: "alert",
+									children: error
+								}),
+								/* @__PURE__ */ jsxs("div", {
+									className: "bo-composer-footer",
+									children: [
+										/* @__PURE__ */ jsxs("button", {
+											type: "button",
+											onClick: () => setPlannerOpen(true),
+											children: [/* @__PURE__ */ jsx(CalendarDays, { size: 13 }), " Chuẩn bị đặt lịch"]
+										}),
+										/* @__PURE__ */ jsx("span", { children: "Bơ hỗ trợ chuẩn bị. Giá & lịch do BOXANH xác nhận." }),
+										/* @__PURE__ */ jsx("span", { children: input.length ? input.length + "/1.800" : "Enter để gửi · Shift + Enter xuống dòng" })
+									]
+								})
+							]
+						})
+					]
+				})]
+			}),
+			/* @__PURE__ */ jsx(BookingPlanner, {
+				open: plannerOpen,
+				onOpenChange: setPlannerOpen,
+				onPrepared: prepared,
+				onQuote
+			}),
+			/* @__PURE__ */ jsx(Dialog.Root, {
+				open: resetOpen,
+				onOpenChange: setResetOpen,
+				children: /* @__PURE__ */ jsxs(Dialog.Portal, { children: [/* @__PURE__ */ jsx(Dialog.Overlay, { className: "bo-modal-overlay" }), /* @__PURE__ */ jsxs(Dialog.Content, {
+					className: "bo-reset-dialog",
+					children: [
+						/* @__PURE__ */ jsx(Dialog.Close, {
+							className: "bo-close-reset",
+							"aria-label": "Đóng xác nhận",
+							children: /* @__PURE__ */ jsx(X, { size: 18 })
+						}),
+						/* @__PURE__ */ jsx(Dialog.Title, { children: "Bắt đầu câu chuyện mới?" }),
+						/* @__PURE__ */ jsx(Dialog.Description, { children: "Hội thoại hiện tại sẽ được bỏ khỏi phiên này. Các yêu cầu dịch vụ bạn đã gửi vẫn được giữ nguyên." }),
+						/* @__PURE__ */ jsxs("div", { children: [/* @__PURE__ */ jsx("button", {
+							type: "button",
+							onClick: () => setResetOpen(false),
+							children: "Giữ hội thoại"
+						}), /* @__PURE__ */ jsx("button", {
+							type: "button",
+							onClick: newChat,
+							children: "Bắt đầu mới"
+						})] })
+					]
+				})] })
+			})
+		]
+	});
+}
+//#endregion
 //#region src/portal-multipage.jsx
 var entries = [
 	{
@@ -2242,6 +3624,7 @@ function PortalHome({ config: c }) {
 		className: "portal-home n7-home",
 		"data-portal-home": true,
 		children: [
+			/* @__PURE__ */ jsx(AIHomeInvite, {}),
 			/* @__PURE__ */ jsxs("section", {
 				className: "n7-home-hero",
 				children: [/* @__PURE__ */ jsxs("div", {
@@ -2415,6 +3798,7 @@ function PortalHome({ config: c }) {
 	});
 }
 var detailTitles = {
+	"/tro-ly-ai": "Bơ · Trợ lý BOXANH",
 	"/chuyen-tro": "Chuyển trọ",
 	"/don-phong": "Dọn phòng",
 	"/ban-giao": "Bàn giao phòng",
@@ -2516,6 +3900,10 @@ function PortalDetail({ route, config: c, onQuote }) {
 		return () => obs.disconnect();
 	}, [route]);
 	let content;
+	if (route === "/tro-ly-ai") content = /* @__PURE__ */ jsx(AssistantPage, {
+		config: c,
+		onQuote
+	});
 	if (route === "/chuyen-tro") content = /* @__PURE__ */ jsx(MovingScene, {
 		c,
 		onQuote
@@ -2535,9 +3923,9 @@ function PortalDetail({ route, config: c, onQuote }) {
 	});
 	return /* @__PURE__ */ jsxs("div", {
 		ref: root,
-		className: "portal-home n7-detail n7-route-" + route.slice(1),
+		className: route === "/tro-ly-ai" ? "bo-route-root" : "portal-home n7-detail n7-route-" + route.slice(1),
 		"data-portal-detail": route,
-		children: [content, /* @__PURE__ */ jsx(Related, { exclude: route })]
+		children: [content, route !== "/tro-ly-ai" && /* @__PURE__ */ jsx(Related, { exclude: route })]
 	});
 }
 //#endregion
